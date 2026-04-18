@@ -458,6 +458,7 @@ contract EventTicketTest is Test {
         assertTrue(used, "Ticket not marked as used");
 
         string memory uri = ticket.tokenURI(0);
+        assertFalse(bytes(uri).length == 0);
         // It shouldn't revert. We could check strings but foundry string contains check exists via strings library or indexOf.
         // For simplicity, just asserting it works.
 
