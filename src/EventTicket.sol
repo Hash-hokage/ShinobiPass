@@ -68,7 +68,6 @@ contract EventTicket is ERC721, ERC2981, Ownable {
     uint256 private _nextTokenId;
     uint256 public immutable RELEASE_DELAY;
     IERC20 public immutable usdc;
-    address public constant USDC_ADDRESS = 0x3600000000000000000000000000000000000000; // Arc network USDC address
 
     mapping(uint256 => Event) public events; // eventId => Event
     mapping(uint256 => Ticket) public tickets; // tokenId => Ticket
@@ -192,6 +191,9 @@ contract EventTicket is ERC721, ERC2981, Ownable {
     }
 
     function cancelEvent(uint256 eventId) external onlyOrganizer(eventId) {
+        if (block.timestamp >= events[eventId].date) {
+            revert EventTicket__EventDateMustBeInTheFuture();
+        }
         if (events[eventId].status != EventStatus.UPCOMING) {
             revert EventTicket__InvalidEventStatus(eventId);
         }
@@ -273,6 +275,9 @@ contract EventTicket is ERC721, ERC2981, Ownable {
         if (evnt.resalePriceCap > 0 && price > evnt.resalePriceCap) {
             revert EventTicket__ResalePriceExceedsCap(price, evnt.resalePriceCap);
         }
+        if (tickets[tokenId].used) {
+            revert EventTicket__TicketAlreadyUsed(tokenId);
+        }
 
         tickets[tokenId].resalePrice = price;
     }
@@ -305,8 +310,7 @@ contract EventTicket is ERC721, ERC2981, Ownable {
         (address royaltyReceiver, uint256 royaltyAmount) = royaltyInfo(tokenId, price);
 
         // transfer USDC from buyer to contract
-        address buyer = msg.sender;
-        usdc.transferFrom(buyer, address(this), price);
+        usdc.transferFrom(msg.sender, address(this), price);
 
         // flag lets _update() allow this specific transfer without reverting due to the "no transfers after listing" rule
         _resaleInProgress = true;
@@ -391,7 +395,7 @@ contract EventTicket is ERC721, ERC2981, Ownable {
             abi.encodePacked(
                 '{"name":"',
                 evnt.name,
-                " ... Ticket #",
+                " - Ticket #",
                 tokenId.toString(),
                 '",',
                 '"description":"Official NFT ticket for ',
@@ -431,6 +435,13 @@ contract EventTicket is ERC721, ERC2981, Ownable {
         address receiver = evnt.royaltyReceiver;
         uint256 royaltyAmount = (salePrice * evnt.royaltyFeeBps) / 10_000;
         return (receiver, royaltyAmount);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // view functions
+    // ─────────────────────────────────────────────────────────────────────────
+    function isValidator(uint256 eventId, address account) external view returns (bool) {
+        return _validators[eventId][account];
     }
 
     // ─────────────────────────────────────────────────────────────────────────
