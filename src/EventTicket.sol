@@ -29,6 +29,7 @@ contract EventTicket is ERC721, ERC2981, Ownable {
     error EventTicket__InvalidEventStatus(uint256 eventId);
     error EventTicket__FundsNotYetReleasable();
     error EventTicket__InsufficientAllowance();
+    error EventTicket__FundsAlreadyClaimed();
 
     // ── Data structures ───────────────────────────────────────────────────────
     enum EventStatus {
@@ -58,6 +59,7 @@ contract EventTicket is ERC721, ERC2981, Ownable {
         uint256 seatNumber;
         bool used;
         uint256 resalePrice;
+        bool refundClaimed;
     }
 
     // ── State ─────────────────────────────────────────────────────────────────
@@ -213,13 +215,35 @@ contract EventTicket is ERC721, ERC2981, Ownable {
         uint256 tokenId = _nextTokenId++;
         events[eventId].minted++;
         events[eventId].escrowBalance += events[eventId].price;
-        tickets[tokenId] = Ticket({eventId: eventId, seatNumber: events[eventId].minted, used: false, resalePrice: 0});
+        tickets[tokenId] = Ticket({
+            eventId: eventId, seatNumber: events[eventId].minted, used: false, resalePrice: 0, refundClaimed: false
+        });
 
         // transfer of USDC from buyer to contract
         usdc.transferFrom(msg.sender, address(this), events[eventId].price);
 
         // mint the ticket NFT to the buyer
         _safeMint(msg.sender, tokenId);
+    }
+
+    function claimRefund(uint256 tokenId) external {
+        if (events[tickets[tokenId].eventId].status != EventStatus.CANCELLED) {
+            revert EventTicket__InvalidEventStatus(tickets[tokenId].eventId);
+        }
+        if (tickets[tokenId].refundClaimed) {
+            revert EventTicket__FundsAlreadyClaimed();
+        }
+        if (ownerOf(tokenId) != msg.sender) {
+            revert EventTicket__NotTicketOwner(tokenId);
+        }
+
+        tickets[tokenId].refundClaimed = true; // prevent reentrancy
+
+        uint256 refundAmount = events[tickets[tokenId].eventId].price;
+        events[tickets[tokenId].eventId].escrowBalance -= refundAmount;
+
+        usdc.transfer(msg.sender, refundAmount);
+        _burn(tokenId);
     }
 
     // ─────────────────────────────────────────────────────────────────────────
