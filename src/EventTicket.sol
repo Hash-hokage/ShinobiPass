@@ -30,6 +30,7 @@ contract EventTicket is ERC721, ERC2981, Ownable {
     error EventTicket__FundsNotYetReleasable();
     error EventTicket__InsufficientAllowance();
     error EventTicket__FundsAlreadyClaimed();
+    error EventTicket__EventAlreadyOccurred(uint256 eventId);
 
     // ── Data structures ───────────────────────────────────────────────────────
     enum EventStatus {
@@ -46,7 +47,7 @@ contract EventTicket is ERC721, ERC2981, Ownable {
         uint256 date;
         uint256 price;
         EventStatus status;
-        uint256 maxSupply; // Total t@ickets
+        uint256 maxSupply; // Total tickets
         uint256 minted; // Tickets minted so far
         bool resaleAllowed;
         address royaltyReceiver;
@@ -87,6 +88,7 @@ contract EventTicket is ERC721, ERC2981, Ownable {
 
     // ── Modifier ──────────────────────────────────────────────────────────────
     modifier onlyOrganizer(uint256 eventId) {
+        if (eventId >= nextEventId) revert EventTicket__EventDoesNotExist(eventId);
         // check msg.sender == events[eventId].organizer
         if (msg.sender != events[eventId].organizer) {
             revert EventTicket__NotEventOrganizer(eventId);
@@ -95,6 +97,7 @@ contract EventTicket is ERC721, ERC2981, Ownable {
     }
 
     modifier canScan(uint256 eventId) {
+        if (eventId >= nextEventId) revert EventTicket__EventDoesNotExist(eventId);
         // check msg.sender is either the organizer OR an approved validator
         if (
             msg.sender != events[eventId].organizer /* organizer can always scan */
@@ -192,7 +195,7 @@ contract EventTicket is ERC721, ERC2981, Ownable {
 
     function cancelEvent(uint256 eventId) external onlyOrganizer(eventId) {
         if (block.timestamp >= events[eventId].date) {
-            revert EventTicket__EventDateMustBeInTheFuture();
+            revert EventTicket__EventAlreadyOccurred(eventId);
         }
         if (events[eventId].status != EventStatus.UPCOMING) {
             revert EventTicket__InvalidEventStatus(eventId);
@@ -204,6 +207,7 @@ contract EventTicket is ERC721, ERC2981, Ownable {
     // BUYER Functions
     // ─────────────────────────────────────────────────────────────────────────
     function mintTicket(uint256 eventId) external {
+        if (eventId >= nextEventId) revert EventTicket__EventDoesNotExist(eventId);
         if (events[eventId].status != EventStatus.UPCOMING) {
             revert EventTicket__InvalidEventStatus(eventId);
         }
@@ -260,6 +264,10 @@ contract EventTicket is ERC721, ERC2981, Ownable {
             revert EventTicket__TicketPriceMustBeGreaterThanZero();
         }
 
+        if (tickets[tokenId].used) {
+            revert EventTicket__TicketAlreadyUsed(tokenId);
+        }
+
         if (events[tickets[tokenId].eventId].status != EventStatus.UPCOMING) {
             revert EventTicket__InvalidEventStatus(tickets[tokenId].eventId);
         }
@@ -272,11 +280,9 @@ contract EventTicket is ERC721, ERC2981, Ownable {
         if (!evnt.resaleAllowed) {
             revert EventTicket__ResaleNotAllowed();
         }
+
         if (evnt.resalePriceCap > 0 && price > evnt.resalePriceCap) {
             revert EventTicket__ResalePriceExceedsCap(price, evnt.resalePriceCap);
-        }
-        if (tickets[tokenId].used) {
-            revert EventTicket__TicketAlreadyUsed(tokenId);
         }
 
         tickets[tokenId].resalePrice = price;
@@ -441,6 +447,7 @@ contract EventTicket is ERC721, ERC2981, Ownable {
     // view functions
     // ─────────────────────────────────────────────────────────────────────────
     function isValidator(uint256 eventId, address account) external view returns (bool) {
+        if (eventId >= nextEventId) revert EventTicket__EventDoesNotExist(eventId);
         return _validators[eventId][account];
     }
 
