@@ -247,6 +247,78 @@ contract EventTicket is ERC721, ERC2981, Ownable {
     }
 
     // ─────────────────────────────────────────────────────────────────────────
+    // SECONDARY MARKET (resale) Functions
+    // ─────────────────────────────────────────────────────────────────────────
+
+    function listForResale(uint256 tokenId, uint256 price) external {
+        if (price == 0) {
+            revert EventTicket__TicketPriceMustBeGreaterThanZero();
+        }
+
+        if (events[tickets[tokenId].eventId].status != EventStatus.UPCOMING) {
+            revert EventTicket__InvalidEventStatus(tickets[tokenId].eventId);
+        }
+
+        if (ownerOf(tokenId) != msg.sender) {
+            revert EventTicket__NotTicketOwner(tokenId);
+        }
+
+        Event storage evt = events[tickets[tokenId].eventId];
+        if (!evt.resaleAllowed) {
+            revert EventTicket__ResaleNotAllowed();
+        }
+        if (evt.resalePriceCap > 0 && price > evt.resalePriceCap) {
+            revert EventTicket__ResalePriceExceedsCap(price, evt.resalePriceCap);
+        }
+
+        tickets[tokenId].resalePrice = price;
+    }
+
+    function buyResaleTicket(uint256 tokenId) external {
+        Ticket storage ticket = tickets[tokenId];
+
+        if (events[ticket.eventId].status != EventStatus.UPCOMING) {
+            revert EventTicket__InvalidEventStatus(ticket.eventId);
+        }
+
+        if (ticket.resalePrice == 0) {
+            revert EventTicket__NotListed(tokenId);
+        }
+
+        if (usdc.balanceOf(msg.sender) < ticket.resalePrice) {
+            revert EventTicket__InsufficientPayment(usdc.balanceOf(msg.sender), ticket.resalePrice);
+        }
+        if (usdc.allowance(msg.sender, address(this)) < ticket.resalePrice) {
+            revert EventTicket__InsufficientAllowance();
+        }
+
+        address seller = ownerOf(tokenId);
+        uint256 price = ticket.resalePrice;
+
+        // Reset resale price before transfer to prevent reentrancy issues
+        ticket.resalePrice = 0;
+
+        // fetch royalty info from event data
+        (address royaltyReceiver, uint256 royaltyAmount) = royaltyInfo(tokenId, price);
+
+        // transfer USDC from buyer to contract
+        address buyer = msg.sender;
+        usdc.transferFrom(buyer, address(this), price);
+
+        // flag lets _update() allow this specific transfer without reverting due to the "no transfers after listing" rule
+        _resaleInProgress = true;
+        _transfer(seller, msg.sender, tokenId);
+        _resaleInProgress = false;
+
+        // distribute funds: royalty to receiver, rest to seller
+        if (royaltyAmount > 0) {
+            usdc.transfer(royaltyReceiver, royaltyAmount);
+        }
+
+        usdc.transfer(seller, price - royaltyAmount);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
     // INTERFACE RESOLUTION  (diamond inheritance)
     // ─────────────────────────────────────────────────────────────────────────
     function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721, ERC2981) returns (bool) {
