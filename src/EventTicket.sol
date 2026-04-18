@@ -52,6 +52,7 @@ contract EventTicket is ERC721, ERC2981, Ownable {
         address royaltyReceiver;
         uint256 resalePriceCap; // Max resale price
         uint96 royaltyFeeBps; // 500 = 5 %
+        string imageURI; // Base URI for on-chain metadata (optional)
     }
 
     struct Ticket {
@@ -118,7 +119,8 @@ contract EventTicket is ERC721, ERC2981, Ownable {
         bool resaleAllowed,
         uint256 resalePriceCap,
         address royaltyReceiver,
-        uint96 royaltyFeeBps
+        uint96 royaltyFeeBps,
+        string calldata imageURI
     ) external returns (uint256 eventId) {
         if (price == 0) {
             revert EventTicket__TicketPriceMustBeGreaterThanZero();
@@ -146,7 +148,8 @@ contract EventTicket is ERC721, ERC2981, Ownable {
             resaleAllowed: resaleAllowed,
             resalePriceCap: resalePriceCap,
             royaltyReceiver: royaltyReceiver,
-            royaltyFeeBps: royaltyFeeBps
+            royaltyFeeBps: royaltyFeeBps,
+            imageURI: imageURI
         });
 
         return eventId;
@@ -263,12 +266,12 @@ contract EventTicket is ERC721, ERC2981, Ownable {
             revert EventTicket__NotTicketOwner(tokenId);
         }
 
-        Event storage evt = events[tickets[tokenId].eventId];
-        if (!evt.resaleAllowed) {
+        Event storage evnt = events[tickets[tokenId].eventId];
+        if (!evnt.resaleAllowed) {
             revert EventTicket__ResaleNotAllowed();
         }
-        if (evt.resalePriceCap > 0 && price > evt.resalePriceCap) {
-            revert EventTicket__ResalePriceExceedsCap(price, evt.resalePriceCap);
+        if (evnt.resalePriceCap > 0 && price > evnt.resalePriceCap) {
+            revert EventTicket__ResalePriceExceedsCap(price, evnt.resalePriceCap);
         }
 
         tickets[tokenId].resalePrice = price;
@@ -333,6 +336,101 @@ contract EventTicket is ERC721, ERC2981, Ownable {
         }
 
         return super._update(to, tokenId, auth);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // ON-CHAIN METADATA  (fully base64-encoded, no IPFS needed)
+    // ─────────────────────────────────────────────────────────────────────────
+    function tokenURI(uint256 tokenId) public view override returns (string memory) {
+        _requireOwned(tokenId); // OZ v5: reverts if tokenId not minted
+
+        Ticket memory ticket = tickets[tokenId];
+        Event memory evnt = events[ticket.eventId];
+
+        string memory statusText;
+        string memory statusColour;
+
+        if (evnt.status == EventStatus.CANCELLED) {
+            statusText = "CANCELLED";
+            statusColour = "#ff4444";
+        } else if (ticket.used) {
+            statusText = "USED";
+            statusColour = "#888888";
+        } else {
+            statusText = "VALID";
+            statusColour = "#44cc88";
+        }
+
+        string memory svg = string(
+            abi.encodePacked(
+                '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 160">',
+                '<rect width="320" height="160" fill="#0d0d1a" rx="12"/>',
+                '<text x="160" y="45" fill="#f0c040" font-size="17" font-weight="bold" text-anchor="middle" font-family="monospace">',
+                evnt.name,
+                "</text>",
+                '<text x="160" y="75" fill="#cccccc" font-size="12" text-anchor="middle" font-family="monospace">',
+                evnt.venue,
+                "</text>",
+                '<text x="160" y="105" fill="#888888" font-size="11" text-anchor="middle" font-family="monospace">Seat #',
+                ticket.seatNumber.toString(),
+                "</text>",
+                '<text x="160" y="140" fill="',
+                statusColour,
+                '" font-size="14" font-weight="bold" text-anchor="middle" font-family="monospace">',
+                statusText,
+                "</text>",
+                "</svg>"
+            )
+        );
+
+        string memory image = bytes(evnt.imageURI).length > 0
+            ? evnt.imageURI
+            : string(abi.encodePacked("data:image/svg+xml;base64,", Base64.encode(bytes(svg))));
+
+        string memory json = string(
+            abi.encodePacked(
+                '{"name":"',
+                evnt.name,
+                " ... Ticket #",
+                tokenId.toString(),
+                '",',
+                '"description":"Official NFT ticket for ',
+                evnt.name,
+                " at ",
+                evnt.venue,
+                '",',
+                '"image":"',
+                image,
+                '",',
+                '"attributes":[',
+                '{"trait_type":"Event","value":"',
+                evnt.name,
+                '"},',
+                '{"trait_type":"Venue","value":"',
+                evnt.venue,
+                '"},',
+                '{"trait_type":"Seat","value":',
+                ticket.seatNumber.toString(),
+                "},",
+                '{"trait_type":"Status","value":"',
+                statusText,
+                '"}',
+                "]}"
+            )
+        );
+
+        return string(abi.encodePacked("data:application/json;base64,", Base64.encode(bytes(json))));
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // ERC-2981 — per-event royalty lookup
+    // ─────────────────────────────────────────────────────────────────────────
+    function royaltyInfo(uint256 tokenId, uint256 salePrice) public view override returns (address, uint256) {
+        Ticket memory ticket = tickets[tokenId];
+        Event memory evnt = events[ticket.eventId];
+        address receiver = evnt.royaltyReceiver;
+        uint256 royaltyAmount = (salePrice * evnt.royaltyFeeBps) / 10_000;
+        return (receiver, royaltyAmount);
     }
 
     // ─────────────────────────────────────────────────────────────────────────
