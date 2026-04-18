@@ -319,6 +319,23 @@ contract EventTicket is ERC721, ERC2981, Ownable {
     }
 
     // ─────────────────────────────────────────────────────────────────────────
+    // TRANSFER HOOK  (OZ v5 — replaces _beforeTokenTransfer)
+    // ─────────────────────────────────────────────────────────────────────────
+    function _update(address to, uint256 tokenId, address auth) internal override returns (address) {
+        address from = _ownerOf(tokenId);
+
+        // from == address(0) means minting, to == address(0) means burning - both are allowed
+        if (from != address(0) && to != address(0)) {
+            // if this is a regular transfer (not part of a resale), enforce that the ticket is not listed for resale
+            if (!_resaleInProgress) {
+                revert EventTicket__ResaleNotAllowed();
+            }
+        }
+
+        return super._update(to, tokenId, auth);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
     // INTERFACE RESOLUTION  (diamond inheritance)
     // ─────────────────────────────────────────────────────────────────────────
     function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721, ERC2981) returns (bool) {
