@@ -2,33 +2,24 @@
 @tailwind components;
 @tailwind utilities;
 
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0');
+
 @layer base {
   :root {
-    --bg-primary: #0a0a0f;
-    --bg-surface: #12121a;
-    --bg-elevated: #1a1a26;
-    --accent-purple: #7c5cfc;
-    --accent-teal: #00d4aa;
-    --danger: #ff4444;
-    --warning: #f0c040;
-    --text-primary: #ffffff;
-    --text-secondary: #8888aa;
-    --border: #2a2a3a;
-
     --background: 240 20% 5%;
     --foreground: 0 0% 100%;
     
-    /* shadcn base overrides mapping to our palette */
+    /* shadcn base overrides mapping to our palette (if any shadcn generic components remain) */
     --card: 240 18% 9%;
     --card-foreground: 0 0% 100%;
     --popover: 240 18% 9%;
     --popover-foreground: 0 0% 100%;
-    --primary: 252 96% 67%; /* 7c5cfc equivalent */
+    --primary: 252 96% 67%; 
     --primary-foreground: 0 0% 100%;
-    --secondary: 168 100% 42%; /* 00d4aa */
+    --secondary: 168 100% 42%; 
     --secondary-foreground: 0 0% 0%;
     --muted: 240 18% 12%; 
-    --muted-foreground: 240 10% 60%; /* text-secondary */
+    --muted-foreground: 240 10% 60%; 
     --accent: 240 18% 12%;
     --accent-foreground: 0 0% 100%;
     --destructive: 0 100% 64%;
@@ -39,20 +30,17 @@
 
 @layer base {
   * {
-    @apply border-border;
+    @apply border-outline-variant/15;
   }
   body {
-    @apply bg-background text-text-primary antialiased;
-    font-family: 'Inter', sans-serif;
+    @apply bg-background text-on-background antialiased font-body;
   }
+}
+
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
 }
 
 code, .font-mono {
   font-family: 'JetBrains Mono', monospace;
-}
-
-.glass-panel {
-  background-color: rgba(26, 26, 38, 0.6);
-  @apply backdrop-blur-xl border;
-  border-color: rgba(42, 42, 58, 0.15);
 }

@@ -4,10 +4,8 @@ import { useState } from "react";
 import { useReadContract } from "wagmi";
 import { EVENT_TICKET_ABI, EVENT_TICKET_ADDRESS } from "@/lib/contract";
 import { Navbar } from "@/components/Navbar";
-import { Button } from "@/components/ui/button";
 import { useSmartWallet } from "@/hooks/useSmartWallet";
 import { formatUnits } from "viem";
-import { CalendarIcon, MapPinIcon, TicketIcon, CreditCardIcon, WalletIcon } from "lucide-react";
 import { openTransakWidget } from "@/lib/transak";
 
 export default function EventDetailPage({ params }: { params: { id: string } }) {
@@ -30,7 +28,7 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
         <div className="flex-1 flex justify-center items-center">
           <div className="animate-pulse flex flex-col items-center gap-4">
              <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-             <p className="text-text-secondary font-mono text-sm">Decrypting metadata...</p>
+             <p className="text-on-surface-variant font-mono text-sm">Decrypting metadata...</p>
           </div>
         </div>
       </div>
@@ -41,11 +39,11 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
   const desc = eventInfo[1];
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const _organizer = eventInfo[2];
-  const date = Number(eventInfo[3]);
-  const maxSupply = Number(eventInfo[4]);
-  const minted = Number(eventInfo[5]);
+  const date = Number(eventInfo[4]);
+  const maxSupply = Number(eventInfo[7]);
+  const minted = Number(eventInfo[8]);
   const status = Number(eventInfo[6]);
-  const price = eventInfo[7];
+  const price = eventInfo[5];
   const bannerUrl = eventInfo[13] || "";
 
   const isSoldOut = minted >= maxSupply;
@@ -86,114 +84,113 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
       {/* Dynamic Background generated from banner if exists, else gradient */}
       {bannerUrl ? (
         <div 
-          className="absolute inset-x-0 top-0 h-[60vh] opacity-20 pointer-events-none"
+          className="absolute inset-x-0 top-0 h-[60vh] opacity-10 pointer-events-none blur-3xl mix-blend-screen transition-all"
           style={{ backgroundImage: `url(${bannerUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
         >
           <div className="absolute inset-0 bg-gradient-to-b from-transparent to-background"></div>
         </div>
       ) : (
-        <div className="absolute inset-x-0 top-[-20%] h-[50vh] bg-primary/20 blur-[140px] rounded-full pointer-events-none"></div>
+        <div className="absolute inset-x-0 top-[-20%] h-[50vh] bg-primary/10 blur-[140px] rounded-full pointer-events-none mix-blend-screen transition-all"></div>
       )}
 
       <Navbar />
 
-      <main className="flex-1 container mx-auto px-4 py-12 z-10 flex flex-col lg:flex-row gap-12">
+      <main className="flex-1 w-full max-w-7xl mx-auto px-8 py-12 z-10 flex flex-col lg:flex-row gap-12 mt-8">
         {/* Left Column: Image & Details */}
         <div className="flex-1 flex flex-col gap-8">
           <div 
-            className="w-full aspect-video rounded-2xl glass-panel border border-border/50 shadow-glow overflow-hidden relative"
+            className="w-full aspect-video rounded-2xl bg-surface-container-lowest border border-outline-variant/15 overflow-hidden relative shadow-ambient"
             style={bannerUrl ? { backgroundImage: `url(${bannerUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}}
           >
              {!bannerUrl && (
-               <div className="absolute inset-0 bg-gradient-to-br from-surface to-elevated flex items-center justify-center">
-                 <span className="text-text-secondary/50 font-mono">No Image Provided</span>
+               <div className="absolute inset-0 bg-gradient-to-br from-surface to-surface-container-high flex items-center justify-center">
+                 <span className="text-on-surface-variant font-mono text-sm uppercase tracking-widest">No Image Provided</span>
                </div>
              )}
           </div>
           
-          <div>
-            <div className="inline-flex items-center px-3 py-1 bg-elevated border border-border/50 text-text-secondary rounded-full text-xs font-mono mb-4">
+          <div className="flex flex-col gap-4">
+            <div className={`self-start inline-flex items-center px-4 py-1.5 rounded-full text-xs font-mono font-bold tracking-wider uppercase border border-outline-variant/15 ${isCancelled ? "bg-error-container text-on-error-container" : isSoldOut ? "bg-surface-container-high text-on-surface-variant" : "bg-primary-container text-on-primary-container"}`}>
                {isCancelled ? "Cancelled" : isSoldOut ? "Sold Out" : "Minting Live"}
             </div>
-            <h1 className="text-4xl md:text-5xl font-bold font-sans text-white mb-6">
+            <h1 className="text-4xl md:text-5xl font-bold font-headline text-on-surface leading-tight tracking-tight">
               {name}
             </h1>
             
-            <p className="text-text-secondary text-lg leading-relaxed whitespace-pre-wrap">
+            <p className="text-on-surface-variant text-lg font-body leading-relaxed whitespace-pre-wrap mt-2">
               {desc}
             </p>
           </div>
         </div>
 
         {/* Right Column: Checkout Panel */}
-        <div className="w-full lg:w-[400px]">
-          <div className="sticky top-24 glass-panel p-6 rounded-2xl shadow-glow-hover border border-primary/20">
-            <h3 className="font-bold text-xl text-white mb-6 border-b border-border/50 pb-4">Secure Ticket checkout</h3>
+        <div className="w-full lg:w-96 flex-shrink-0">
+          <div className="sticky top-32 bg-surface-container-lowest p-8 rounded-2xl border border-outline-variant/15 shadow-ambient flex flex-col gap-8">
+            <h3 className="font-bold font-headline text-2xl text-on-surface leading-tight border-b border-outline-variant/15 pb-6">Secure Checkout</h3>
             
-            <div className="space-y-4 mb-8">
-              <div className="flex items-center gap-3 text-text-secondary">
-                <div className="w-10 h-10 rounded-full bg-elevated flex items-center justify-center border border-border/50">
-                  <CalendarIcon className="w-5 h-5 text-primary" />
+            <div className="flex flex-col gap-6">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center border border-outline-variant/15">
+                  <span className="material-symbols-outlined text-primary">calendar_month</span>
                 </div>
-                <div>
-                  <p className="font-medium text-white text-sm">Date & Time</p>
-                  <p className="text-xs font-mono">{new Date(date * 1000).toLocaleString()}</p>
-                </div>
-              </div>
-              
-              <div className="flex items-center gap-3 text-text-secondary">
-                <div className="w-10 h-10 rounded-full bg-elevated flex items-center justify-center border border-border/50">
-                  <MapPinIcon className="w-5 h-5 text-primary" />
-                </div>
-                <div>
-                  <p className="font-medium text-white text-sm">Location</p>
-                  <p className="text-xs">Location metadata</p>
+                <div className="flex flex-col">
+                  <span className="text-on-surface-variant font-body text-xs mb-0.5">Date & Time</span>
+                  <span className="font-mono text-on-surface text-sm uppercase">{new Date(date * 1000).toLocaleString(undefined, { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</span>
                 </div>
               </div>
               
-              <div className="flex items-center gap-3 text-text-secondary">
-                <div className="w-10 h-10 rounded-full bg-elevated flex items-center justify-center border border-border/50">
-                  <TicketIcon className="w-5 h-5 text-primary" />
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center border border-outline-variant/15">
+                  <span className="material-symbols-outlined text-primary">location_on</span>
                 </div>
-                <div>
-                  <p className="font-medium text-white text-sm">Availability</p>
-                  <p className="text-xs font-mono">
-                    <span className="text-white">{minted}</span> / {maxSupply} minted
-                  </p>
+                <div className="flex flex-col">
+                  <span className="text-on-surface-variant font-body text-xs mb-0.5">Location</span>
+                  <span className="text-on-surface text-sm font-body">Location metadata</span>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center border border-outline-variant/15">
+                  <span className="material-symbols-outlined text-primary">confirmation_number</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-on-surface-variant font-body text-xs mb-0.5">Availability</span>
+                  <span className="font-mono text-on-surface text-sm">
+                    {minted} / {maxSupply} minted
+                  </span>
                 </div>
               </div>
             </div>
             
-            <div className="bg-background rounded-xl p-4 border border-border/50 mb-6 flex justify-between items-center">
-               <span className="text-text-secondary">Price</span>
-               <span className="text-2xl font-bold font-mono text-white">{formatUnits(price, 6)} <span className="text-sm text-primary">USDC</span></span>
+            <div className="bg-surface-container rounded-xl p-6 border border-outline-variant/15 flex justify-between items-center mt-2">
+               <span className="text-on-surface-variant font-body text-sm font-medium">Price</span>
+               <span className="text-3xl font-bold font-mono text-secondary">{formatUnits(price, 6)} <span className="text-base text-secondary/70">USDC</span></span>
             </div>
             
-            <div className="flex flex-col gap-3">
-              <Button 
+            <div className="flex flex-col gap-4 mt-2">
+              <button 
                 onClick={handleBuyWithCard}
-                className="w-full bg-white text-background hover:bg-white/90 shadow-glow h-12 font-medium flex items-center justify-center gap-2"
+                className="w-full bg-on-surface text-surface py-3 rounded font-bold font-body transition-colors disabled:opacity-50 disabled:cursor-not-allowed hover:bg-on-surface/90 flex items-center justify-center gap-2"
                 disabled={isCancelled || (isSoldOut && !isCancelled)} /* Demo assumption */
               >
-                <CreditCardIcon className="w-5 h-5" /> Buy with Card
-              </Button>
+                <span className="material-symbols-outlined text-[20px]">credit_card</span> Buy with Card
+              </button>
               
-              <Button 
+              <button 
                 onClick={handleMintWithUSDC}
-                variant="outline"
-                className="w-full bg-surface border border-primary/50 text-white hover:bg-primary/20 hover:text-white h-12 font-medium flex items-center justify-center gap-2 transition-all"
+                className="w-full bg-transparent text-primary border border-primary/30 hover:bg-primary/5 py-3 rounded font-bold font-body transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 disabled={isCancelled || (isSoldOut && !isCancelled) || isMinting}
               >
                 {isMinting ? (
-                  <><div className="w-4 h-4 border-2 border-white/50 border-t-white rounded-full animate-spin"></div> Minting...</>
+                  <><div className="w-5 h-5 border-2 border-primary/50 border-t-primary rounded-full animate-spin"></div> Minting...</>
                 ) : (
-                  <><WalletIcon className="w-5 h-5" /> Buy with USDC (Gasless)</>
+                  <><span className="material-symbols-outlined text-[20px]">account_balance_wallet</span> Buy with USDC (Gasless)</>
                 )}
-              </Button>
+              </button>
             </div>
             
-            <p className="text-center text-xs text-text-secondary mt-6 flex items-center justify-center gap-1">
-              Protected by <span className="text-primary font-mono font-medium tracking-tight">ZeroDev</span> Account Abstraction
+            <p className="text-center text-xs text-on-surface-variant flex items-center justify-center gap-1 font-body">
+              Protected by <span className="text-primary font-mono font-bold tracking-widest uppercase">ZeroDev</span>
             </p>
           </div>
         </div>

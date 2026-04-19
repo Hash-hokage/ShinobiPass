@@ -2,8 +2,6 @@
 
 import Link from "next/link";
 import { formatUnits } from "viem";
-import { CalendarIcon, MapPinIcon, TicketIcon } from "lucide-react";
-import { Button } from "@/components/ui/button";
 
 export type EventStatus = "Active" | "Cancelled" | "Completed";
 
@@ -28,52 +26,52 @@ export interface EventType {
 export function EventCard({ event }: { event: EventType }) {
   const isSoldOut = event.minted >= event.maxSupply;
   const isCancelled = event.status === 1;
-  const price = formatUnits(event.ticketPrice, 6); // USDC has 6 decimals, but the contract uses 18 if mocked, wait. The prompt said standard USDC, so 6. We use formatUnits(..., 6). Actually Arc USDC might be 6 standard.
+  const price = formatUnits(event.ticketPrice, 6);
 
-  const bgStyle = event.bannerUrl ? { backgroundImage: `url(${event.bannerUrl})`, backgroundSize: 'cover' } : {};
+  const fallbackImage = "https://lh3.googleusercontent.com/aida-public/AB6AXuBgqlUinDUjFZOxj13fB_brlLHsvUL4A0SQVLNsdSe9G_w7UT5hg_QUOKEFP6uhKp8yzq2a-ClQ0o9p0dpEZ8FHerayBkNdJr99xfjrk0Otjw9uugKZfIO0uTOYbl3j9WlmOGL4DWt9xQcNMzLl6kXetmGi0MD37CDnFefln0LK7oFjn4tXlRe895YE7hGT8JJBjc22E9LAhE9ximWpb3A2CVAXiihz02LOPi7RxAagtcFZzT5qGfrXlAL7Y5UG1MipuTEBd7gzci3m";
 
   return (
-    <div className="glass-panel rounded-xl overflow-hidden shadow-glow transition-all hover:scale-[1.02] hover:shadow-glow-hover flex flex-col h-full border border-border/50">
-      <div 
-        className="h-40 w-full relative bg-gradient-to-br from-primary/30 to-surface border-b border-border/30"
-        style={bgStyle}
-      >
-        <div className="absolute top-3 right-3 bg-surface/80 backdrop-blur-md px-3 py-1 rounded-full text-xs font-mono font-medium border border-border/50 flex items-center gap-1.5">
-          <span className={`w-2 h-2 rounded-full ${isCancelled ? "bg-danger" : isSoldOut ? "bg-warning" : "bg-teal animate-pulse"}`}></span>
-          {isCancelled ? "Cancelled" : isSoldOut ? "Sold Out" : "Active"}
+    <div className="flex flex-col bg-surface-container-lowest rounded-xl overflow-hidden border-outline-variant/15 border-transparent border-[1px] hover:shadow-glow hover:-translate-y-1 transition-all duration-300 group cursor-pointer">
+      <div className="relative h-48 w-full overflow-hidden">
+        <img 
+          alt="Event Image" 
+          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
+          src={event.bannerUrl || fallbackImage}
+        />
+        <div className="absolute top-4 left-4">
+          <span className={`inline-flex items-center px-3 py-1 rounded-full font-mono text-xs font-bold tracking-wider uppercase ${isCancelled ? "bg-error-container text-on-error-container" : isSoldOut ? "bg-surface-container-high text-on-surface-variant" : "bg-primary-container text-on-primary-container"}`}>
+            {isCancelled ? "CANCELLED" : isSoldOut ? "SOLD OUT" : "UPCOMING"}
+          </span>
         </div>
       </div>
-      
-      <div className="p-5 flex flex-col flex-1">
-        <h3 className="font-bold text-xl text-white mb-2 line-clamp-1">{event.name}</h3>
-        
-        <div className="space-y-2 mb-6">
-          <div className="flex items-center gap-2 text-text-secondary text-sm">
-            <CalendarIcon className="w-4 h-4 text-primary" />
-            <span>{new Date(event.date * 1000).toLocaleString()}</span>
+      <div className="p-6 flex flex-col gap-6 flex-1">
+        <div className="flex flex-col gap-2">
+          <p className="text-primary font-mono text-xs uppercase tracking-widest font-bold">
+            {new Date(event.date * 1000).toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' })} · {new Date(event.date * 1000).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
+          </p>
+          <h3 className="text-xl font-bold font-headline text-on-surface leading-tight truncate">{event.name}</h3>
+          <p className="text-on-surface-variant text-sm flex items-center gap-1 font-body truncate">
+            <span className="material-symbols-outlined text-[16px]">location_on</span>
+            {event.description}
+          </p>
+        </div>
+        <div className="flex items-center justify-between pt-4 border-t border-outline-variant/15 mt-auto">
+          <div className="flex flex-col">
+            <span className="text-on-surface-variant text-xs font-body mb-1">Price</span>
+            <span className="text-secondary font-mono font-medium text-lg">{price} USDC</span>
           </div>
-          <div className="flex items-center gap-2 text-text-secondary text-sm">
-            <MapPinIcon className="w-4 h-4 text-primary" />
-            <span className="line-clamp-1">{event.description.substring(0, 30)}...</span> {/* Dummy location or description */}
-          </div>
-          <div className="flex items-center justify-between text-sm mt-3 pt-3 border-t border-border/50">
-            <div className="flex items-center gap-1.5 text-text-secondary font-mono">
-              <TicketIcon className="w-4 h-4 text-teal" />
-              <span>{event.maxSupply - event.minted} Left</span>
-            </div>
-            <div className="font-mono font-bold text-white">
-              {price} USDC
-            </div>
+          <div className="flex flex-col items-end">
+            <span className="text-on-surface-variant text-xs font-body mb-1">Availability</span>
+            <span className="text-on-surface font-mono text-sm">{Math.max(0, event.maxSupply - event.minted)} / {event.maxSupply}</span>
           </div>
         </div>
-        
-        <div className="mt-auto">
-          <Link href={`/events/${event.id}`} className="w-full">
-            <Button className="w-full bg-primary hover:bg-primary/90 text-white shadow-glow transition-all" disabled={isCancelled}>
-              {isSoldOut ? "View Resale" : "Buy Ticket"}
-            </Button>
-          </Link>
-        </div>
+        <Link href={`/events/${event.id}`} className="w-full mt-2">
+          <button 
+            className={`w-full py-3 rounded font-bold transition-colors font-body ${isSoldOut ? "bg-transparent text-on-surface-variant border border-outline-variant hover:bg-surface-container-high opacity-70" : "bg-transparent text-primary hover:bg-primary/5 border border-outline-variant/15"}`}
+          >
+            {isSoldOut ? "Waitlist" : "View Event"}
+          </button>
+        </Link>
       </div>
     </div>
   );

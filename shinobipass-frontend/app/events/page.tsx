@@ -4,7 +4,7 @@ import { useReadContract } from "wagmi";
 import { EVENT_TICKET_ABI, EVENT_TICKET_ADDRESS } from "@/lib/contract";
 import { EventCard, EventType } from "@/components/EventCard";
 import { Navbar } from "@/components/Navbar";
-import { SearchIcon, FilterIcon, Loader2Icon } from "lucide-react";
+import { Loader2Icon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { createPublicClient, http } from "viem";
 import { arcTestnet } from "@/lib/contract";
@@ -54,17 +54,18 @@ export default function ExploreEventsPage() {
             name: res[0],
             description: res[1],
             organizer: res[2],
-            date: Number(res[3]),
-            maxSupply: Number(res[4]),
-            minted: Number(res[5]),
+            date: Number(res[4]),
+            ticketPrice: res[5],
             status: Number(res[6]),
-            ticketPrice: res[7],
-            resaleCapMultiplier: Number(res[8]),
+            maxSupply: Number(res[7]),
+            minted: Number(res[8]),
             isResaleAllowed: res[9],
             usdcRecipient: res[10],
-            escrowBalance: res[11],
+            resaleCapMultiplier: Number(res[11]),
             releaseDelay: Number(res[12]),
             bannerUrl: res[13] || "",
+            // Unused by this mock array
+            escrowBalance: res[3],
           });
         });
         
@@ -80,32 +81,37 @@ export default function ExploreEventsPage() {
   }, [nextEventId]);
 
   return (
-    <div className="min-h-screen bg-background flex flex-col relative overflow-hidden">
+    <div className="flex-grow w-full">
       <div className="absolute top-0 right-0 w-[40%] h-[30%] bg-secondary/10 blur-[130px] rounded-full pointer-events-none"></div>
       
       <Navbar />
 
-      <main className="flex-1 container mx-auto px-4 py-12 z-10">
-        <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-12 border-b border-border/50 pb-8">
-          <div>
-            <h1 className="text-4xl font-bold font-sans text-white mb-2 tracking-tight">Explore the Underworld</h1>
-            <p className="text-text-secondary text-lg">Discover active and upcoming events.</p>
-          </div>
-          
-          <div className="flex gap-3 w-full md:w-auto">
-            <div className="relative flex-1 md:w-64">
-              <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-secondary" />
+      <main className="w-full max-w-7xl mx-auto px-8 py-12 flex flex-col gap-12 bg-background z-10 relative">
+        {/* Header & Search/Filter Section */}
+        <section className="flex flex-col gap-8 w-full mt-8">
+          <div className="flex flex-col md:flex-row justify-between items-end gap-6 w-full">
+            <div className="flex flex-col gap-2">
+              <h1 className="text-5xl font-bold font-headline text-on-surface tracking-tight">Explore Events</h1>
+              <p className="text-on-surface-variant font-body">Discover premium Web3 gatherings and exclusive experiences.</p>
+            </div>
+            <div className="w-full md:w-96 relative">
+              <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
               <input 
-                type="text" 
-                placeholder="Search events..." 
-                className="w-full bg-elevated/50 border border-border/50 text-white rounded-lg pl-9 pr-4 py-2 text-sm focus:outline-none focus:border-primary/50 transition-colors placeholder:text-text-secondary/50 font-mono"
+                className="w-full bg-surface-container-highest text-on-surface placeholder:text-on-surface-variant/50 rounded-lg py-3 pl-12 pr-4 border border-outline-variant/15 focus:outline-none focus:ring-2 focus:ring-primary focus:bg-surface-bright transition-all shadow-inner font-body" 
+                placeholder="Search events, venues, or artists..." 
+                type="text"
               />
             </div>
-            <button className="bg-elevated/50 border border-border/50 p-2.5 rounded-lg text-text-secondary hover:text-white hover:border-primary/50 transition-colors">
-              <FilterIcon className="w-4 h-4" />
-            </button>
           </div>
-        </div>
+          
+          {/* Filter Pills */}
+          <div className="flex flex-wrap items-center gap-3 w-full">
+            <button className="px-5 py-2 rounded-full bg-primary-container text-on-primary-container font-medium text-sm font-body border border-outline-variant/15">All</button>
+            <button className="px-5 py-2 rounded-full bg-transparent text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface font-medium text-sm font-body border border-outline-variant/15 transition-colors">This Week</button>
+            <button className="px-5 py-2 rounded-full bg-transparent text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface font-medium text-sm font-body border border-outline-variant/15 transition-colors">This Month</button>
+            <button className="px-5 py-2 rounded-full bg-transparent text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface font-medium text-sm font-body border border-outline-variant/15 transition-colors">Free</button>
+          </div>
+        </section>
 
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-32 text-text-secondary gap-4">
@@ -113,17 +119,17 @@ export default function ExploreEventsPage() {
             <span className="font-mono text-sm">Synchronizing ledger state...</span>
           </div>
         ) : events.length === 0 ? (
-          <div className="text-center py-20 px-4 glass-panel rounded-xl border border-border/30">
+          <div className="text-center py-20 px-4 flex flex-col items-center justify-center bg-surface-container-lowest rounded-xl border border-outline-variant/15 border-dashed">
             <span className="text-5xl block mb-6">🏜️</span>
-            <h3 className="text-xl font-bold text-white mb-2">No active events</h3>
-            <p className="text-text-secondary">It&apos;s quiet... Too quiet.</p>
+            <h3 className="text-xl font-bold font-headline text-on-surface mb-2">No active events</h3>
+            <p className="text-on-surface-variant">It&apos;s quiet... Too quiet.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 w-full">
             {events.map(event => (
               <EventCard key={event.id} event={event} />
             ))}
-          </div>
+          </section>
         )}
       </main>
     </div>

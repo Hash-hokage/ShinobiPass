@@ -1,11 +1,8 @@
 "use client";
 
-
 import { useSmartWallet } from "@/hooks/useSmartWallet";
 import { Navbar } from "@/components/Navbar";
-import { LineChartIcon, PlusIcon, ScanLineIcon } from "lucide-react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
 
 export default function OrganizerDashboard() {
   const { isConnected, connect } = useSmartWallet();
@@ -15,13 +12,13 @@ export default function OrganizerDashboard() {
       <div className="min-h-screen bg-background flex flex-col">
         <Navbar />
         <div className="flex-1 flex items-center justify-center p-8">
-           <div className="glass-panel p-10 rounded-xl text-center max-w-md w-full border border-border/50">
-             <LineChartIcon className="w-12 h-12 text-primary mx-auto mb-4" />
-             <h2 className="text-2xl font-bold text-white mb-2">Organizer Dashboard</h2>
-             <p className="text-text-secondary mb-6">Connect your wallet to manage your events.</p>
-             <Button onClick={() => connect()} className="w-full bg-primary hover:bg-primary/90 text-white shadow-glow">
+           <div className="bg-surface-container-lowest p-10 rounded-2xl text-center max-w-md w-full border border-outline-variant/15 shadow-ambient flex flex-col items-center">
+             <span className="material-symbols-outlined text-[48px] text-primary mb-4">analytics</span>
+             <h2 className="text-2xl font-bold font-headline text-on-surface mb-2">Organizer Dashboard</h2>
+             <p className="text-on-surface-variant font-body mb-8">Connect your wallet to manage your events.</p>
+             <button onClick={() => connect()} className="w-full py-3 bg-primary text-on-primary font-bold font-body rounded hover:opacity-90 transition-opacity">
                Connect Wallet
-             </Button>
+             </button>
            </div>
         </div>
       </div>
@@ -33,47 +30,69 @@ export default function OrganizerDashboard() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col relative overflow-hidden">
-      <div className="absolute top-0 right-[-10%] w-[30%] h-[50%] bg-teal/10 blur-[150px] rounded-full pointer-events-none"></div>
+      <div className="absolute top-0 right-[-10%] w-[40%] h-[60%] bg-secondary/10 blur-[150px] rounded-full pointer-events-none mix-blend-screen transition-all"></div>
       
       <Navbar />
 
-      <main className="flex-1 container mx-auto px-4 py-12 z-10">
-        <div className="flex items-center justify-between border-b border-border/50 pb-6 mb-8">
-           <h1 className="text-3xl font-bold font-sans text-white tracking-tight">Organizer Terminal</h1>
+      <main className="flex-1 w-full max-w-7xl mx-auto px-8 py-12 z-10 flex flex-col gap-12 mt-8">
+        <div className="flex items-center justify-between border-b border-outline-variant/15 pb-8">
+           <div className="flex flex-col gap-2">
+             <h1 className="text-5xl font-bold font-headline text-on-surface tracking-tight">Organizer Terminal</h1>
+             <p className="text-on-surface-variant font-body mb-2">Manage events, track revenue, and control access.</p>
+           </div>
            <Link href="/organizer/create">
-             <Button className="bg-primary hover:bg-primary/90 text-white shadow-glow gap-2 h-10">
-               <PlusIcon className="w-4 h-4" /> Create Event
-             </Button>
+             <button className="bg-primary hover:bg-primary/90 text-on-primary font-bold font-body px-6 py-3 rounded shadow-ambient flex items-center gap-2 transition-all">
+               <span className="material-symbols-outlined text-[20px]">add</span> Create Event
+             </button>
            </Link>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-           <div className="glass-panel p-6 rounded-xl border border-border/50 relative overflow-hidden">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-4">
+           {/* Stat Card 1 */}
+           <div className="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/15 relative overflow-hidden hover:shadow-glow transition-all hover:-translate-y-1 duration-300">
              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent pointer-events-none"></div>
-             <p className="text-text-secondary text-sm font-medium mb-2">Total Sales</p>
-             <p className="text-3xl font-mono font-bold text-white">0.00 <span className="text-sm text-primary">USDC</span></p>
-           </div>
-           <div className="glass-panel p-6 rounded-xl border border-border/50 relative overflow-hidden">
-             <div className="absolute inset-0 bg-gradient-to-br from-teal/5 to-transparent pointer-events-none"></div>
-             <p className="text-text-secondary text-sm font-medium mb-2">Tickets Minted</p>
-             <p className="text-3xl font-mono font-bold text-white">0 <span className="text-sm text-teal">TXs</span></p>
-           </div>
-           <div className="glass-panel p-6 rounded-xl border border-border/50 flex flex-col justify-between">
-             <div>
-               <p className="text-text-secondary text-sm font-medium mb-2">Scan & Validate</p>
-               <p className="text-xs text-text-secondary/70">Access validator dashboard for your events.</p>
+             <div className="flex items-center gap-2 mb-4 text-on-surface-variant">
+               <span className="material-symbols-outlined text-[20px]">payments</span>
+               <p className="text-sm font-medium font-body uppercase tracking-wider">Total Sales</p>
              </div>
-             <Button variant="outline" className="w-full mt-4 border-border hover:bg-white/5 gap-2">
-               <ScanLineIcon className="w-4 h-4" /> Open Scanner
-             </Button>
+             <p className="text-4xl font-mono font-bold text-on-surface">0.00 <span className="text-sm text-primary">USDC</span></p>
+           </div>
+           
+           {/* Stat Card 2 */}
+           <div className="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/15 relative overflow-hidden hover:shadow-glow transition-all hover:-translate-y-1 duration-300">
+             <div className="absolute inset-0 bg-gradient-to-br from-secondary/5 to-transparent pointer-events-none"></div>
+             <div className="flex items-center gap-2 mb-4 text-on-surface-variant">
+               <span className="material-symbols-outlined text-[20px]">confirmation_number</span>
+               <p className="text-sm font-medium font-body uppercase tracking-wider">Tickets Minted</p>
+             </div>
+             <p className="text-4xl font-mono font-bold text-on-surface">0 <span className="text-sm text-secondary">TXs</span></p>
+           </div>
+           
+           {/* Action Card */}
+           <div className="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/15 flex flex-col justify-between hover:shadow-glow transition-all hover:-translate-y-1 duration-300">
+             <div>
+               <div className="flex items-center gap-2 mb-2 text-on-surface-variant">
+                 <span className="material-symbols-outlined text-[20px]">qr_code_scanner</span>
+                 <p className="text-sm font-medium font-body uppercase tracking-wider">Scan & Validate</p>
+               </div>
+               <p className="text-xs text-on-surface-variant/70 font-body leading-relaxed mb-4">Access validator dashboard for your events.</p>
+             </div>
+             <button className="w-full mt-4 bg-transparent border border-outline-variant hover:bg-surface-container-high py-2.5 rounded text-on-surface-variant font-bold font-body transition-colors flex items-center justify-center gap-2">
+               <span className="material-symbols-outlined text-[18px]">document_scanner</span> Open Scanner
+             </button>
            </div>
         </div>
 
-        <h2 className="text-xl font-bold text-white mb-6">Your Events</h2>
-        <div className="text-center py-24 glass-panel rounded-xl border border-border/30 border-dashed">
-             <span className="text-4xl mb-4 block">📈</span>
-             <h3 className="text-xl font-bold text-white mb-2">No events created</h3>
-             <p className="text-text-secondary">Deploy your first event to start accepting ticket purchases securely on-chain.</p>
+        <div className="flex flex-col gap-6">
+          <h2 className="text-2xl font-bold font-headline text-on-surface">Your Events</h2>
+          <div className="text-center py-32 bg-surface-container-lowest rounded-2xl border border-outline-variant/15 border-dashed flex flex-col items-center">
+               <span className="text-5xl mb-6 block mix-blend-luminosity opacity-80">📈</span>
+               <h3 className="text-xl font-bold font-headline text-on-surface mb-2">No events created</h3>
+               <p className="text-on-surface-variant font-body mt-2">Deploy your first event to start accepting ticket purchases securely on-chain.</p>
+               <Link href="/organizer/create" className="mt-6">
+                 <button className="text-primary font-mono text-xs uppercase tracking-widest hover:underline decoration-primary underline-offset-4 bg-transparent">Deploy Contract -{'>'}</button>
+               </Link>
+          </div>
         </div>
       </main>
     </div>

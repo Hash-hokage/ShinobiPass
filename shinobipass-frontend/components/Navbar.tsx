@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useSmartWallet } from "@/hooks/useSmartWallet";
-import { Button } from "@/components/ui/button";
 import { PlusIcon, TicketIcon, LayoutDashboardIcon } from "lucide-react";
 
 export function Navbar() {
@@ -11,25 +10,20 @@ export function Navbar() {
   const truncate = (addr: string) => `${addr.slice(0, 6)}...${addr.slice(-4)}`;
 
   return (
-    <nav className="sticky top-0 z-40 w-full border-b border-border bg-surface/80 backdrop-blur-xl">
-      <div className="container mx-auto px-4 h-16 w-full flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-2 transition-opacity hover:opacity-80">
-          <div className="h-8 w-8 rounded-full bg-gradient-primary flex items-center justify-center shadow-glow">
-            <span className="text-white font-bold text-lg font-mono leading-none">S</span>
-          </div>
-          <span className="text-white font-bold text-xl tracking-tight hidden sm:block">
-            ShinobiPass
-          </span>
+    <nav className="bg-background/80 backdrop-blur-xl font-headline font-bold tracking-tight fixed top-0 w-full z-50 shadow-glow">
+      <div className="flex justify-between items-center px-8 h-20 w-full max-w-7xl mx-auto">
+        <Link href="/" className="text-2xl font-bold tracking-tighter text-primary">
+          ShinobiPass
         </Link>
         
-        <div className="flex items-center gap-6 text-sm text-text-secondary font-medium">
-          <Link href="/events" className="hover:text-white transition-colors">Explore</Link>
+        <div className="hidden md:flex gap-8 items-center font-body font-medium text-sm">
+          <Link href="/events" className="text-text-secondary hover:text-primary transition-all duration-300 hover:bg-surface-container-high/50 px-3 py-2 rounded">Explore</Link>
           {isConnected && (
             <>
-              <Link href="/my-tickets" className="hover:text-white transition-colors flex items-center gap-1.5">
+              <Link href="/my-tickets" className="text-text-secondary hover:text-primary transition-all duration-300 hover:bg-surface-container-high/50 px-3 py-2 rounded flex items-center gap-1.5">
                 <TicketIcon className="w-4 h-4" /> Tickets
               </Link>
-              <Link href="/organizer" className="hover:text-white transition-colors flex items-center gap-1.5">
+              <Link href="/organizer" className="text-text-secondary hover:text-primary transition-all duration-300 hover:bg-surface-container-high/50 px-3 py-2 rounded flex items-center gap-1.5">
                 <LayoutDashboardIcon className="w-4 h-4" /> Organizer
               </Link>
             </>
@@ -38,21 +32,21 @@ export function Navbar() {
 
         <div className="flex items-center gap-4">
           {!isConnected ? (
-            <Button 
+            <button 
               onClick={() => connect()} 
-              className="bg-primary hover:bg-primary/90 text-white shadow-glow-hover transition-all"
+              className="bg-gradient-to-br from-[#7c5cfc] to-[#947dff] text-white px-6 py-2.5 rounded-lg font-body font-medium hover:opacity-90 active:scale-95 transition-transform"
             >
-              Connect Wallet
-            </Button>
+              Sign In
+            </button>
           ) : (
             <div className="flex items-center gap-3">
               <Link href="/organizer/create">
-                <Button variant="outline" size="sm" className="hidden sm:flex border-border hover:bg-white/5 h-9 gap-1.5">
+                <button className="hidden sm:flex items-center text-text-secondary hover:text-primary px-3 py-2 rounded font-body font-medium text-sm transition-colors gap-1.5">
                   <PlusIcon className="w-4 h-4" /> New Event
-                </Button>
+                </button>
               </Link>
               <div 
-                className="px-3 py-1.5 rounded-full bg-elevated border border-border/50 text-white font-mono text-xs cursor-pointer hover:bg-white/5 transition-colors"
+                className="px-4 py-2 rounded-full bg-surface-container-high border border-outline-variant/15 text-primary font-label text-xs cursor-pointer hover:bg-surface-container-highest transition-colors font-medium"
                 onClick={disconnect}
                 title="Click to disconnect"
               >
