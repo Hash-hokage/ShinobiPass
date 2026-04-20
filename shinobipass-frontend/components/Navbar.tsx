@@ -16,18 +16,10 @@ export function Navbar() {
           ShinobiPass
         </Link>
         
-        <div className="hidden md:flex gap-8 items-center font-body font-medium text-sm">
-          <Link href="/events" className="text-text-secondary hover:text-primary transition-all duration-300 hover:bg-surface-container-high/50 px-3 py-2 rounded">Explore</Link>
-          {isConnected && (
-            <>
-              <Link href="/my-tickets" className="text-text-secondary hover:text-primary transition-all duration-300 hover:bg-surface-container-high/50 px-3 py-2 rounded flex items-center gap-1.5">
-                <TicketIcon className="w-4 h-4" /> Tickets
-              </Link>
-              <Link href="/organizer" className="text-text-secondary hover:text-primary transition-all duration-300 hover:bg-surface-container-high/50 px-3 py-2 rounded flex items-center gap-1.5">
-                <LayoutDashboardIcon className="w-4 h-4" /> Organizer
-              </Link>
-            </>
-          )}
+        <div className="hidden md:flex gap-10 items-center font-body font-medium text-sm">
+          <Link href="/events" className="text-white hover:text-[#7c5cfc] transition-colors">Explore</Link>
+          <Link href="/organizer/create" className="text-white hover:text-[#7c5cfc] transition-colors">Create</Link>
+          <Link href="#" className="text-white hover:text-[#7c5cfc] transition-colors">Docs</Link>
         </div>
 
         <div className="flex items-center gap-4">

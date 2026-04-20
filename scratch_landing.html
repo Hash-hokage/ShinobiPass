@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ShinobiPass - Own Your Ticket</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@700&amp;family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined.fill {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary": "#00382b",
+                        "secondary-fixed-dim": "#28dfb5",
+                        "surface-dim": "#131318",
+                        "tertiary-container": "#d57a20",
+                        "surface-tint": "#cabeff",
+                        "primary": "#cabeff",
+                        "surface-variant": "#35343a",
+                        "surface-container-high": "#2a292f",
+                        "on-primary-container": "#2b0088",
+                        "error": "#ffb4ab",
+                        "background": "#131318",
+                        "on-tertiary-fixed": "#2f1500",
+                        "primary-fixed": "#e6deff",
+                        "inverse-on-surface": "#303036",
+                        "surface-container-low": "#1b1b20",
+                        "surface-container-highest": "#35343a",
+                        "on-tertiary-container": "#432100",
+                        "on-surface": "#e4e1e9",
+                        "on-secondary-fixed": "#002118",
+                        "on-surface-variant": "#c9c4d8",
+                        "surface-bright": "#39383e",
+                        "on-primary": "#32009a",
+                        "tertiary-fixed": "#ffdcc3",
+                        "on-primary-fixed": "#1c0062",
+                        "tertiary": "#ffb77d",
+                        "on-error-container": "#ffdad6",
+                        "inverse-surface": "#e4e1e9",
+                        "primary-fixed-dim": "#cabeff",
+                        "inverse-primary": "#613de0",
+                        "surface-container": "#1f1f25",
+                        "secondary": "#41eec2",
+                        "on-tertiary": "#4d2600",
+                        "on-error": "#690005",
+                        "on-background": "#e4e1e9",
+                        "outline-variant": "#484555",
+                        "on-primary-fixed-variant": "#4918c8",
+                        "secondary-container": "#00d1a7",
+                        "error-container": "#93000a",
+                        "outline": "#938ea1",
+                        "on-tertiary-fixed-variant": "#6e3900",
+                        "on-secondary-fixed-variant": "#00513f",
+                        "tertiary-fixed-dim": "#ffb77d",
+                        "secondary-fixed": "#55fcd0",
+                        "primary-container": "#947dff",
+                        "surface": "#131318",
+                        "surface-container-lowest": "#0e0e13",
+                        "on-secondary-container": "#005441"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {},
+                    "fontFamily": {
+                        "headline": ["Space Grotesk", "sans-serif"],
+                        "body": ["Inter", "sans-serif"],
+                        "label": ["JetBrains Mono", "monospace"]
+                    }
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background text-on-background font-body antialiased min-h-screen flex flex-col pt-20">
+<!-- TopNavBar -->
+<nav class="bg-[#0a0a0f]/80 backdrop-blur-xl font-['Space_Grotesk'] font-bold tracking-tight fixed top-0 w-full z-50 bg-[#131318] shadow-[0_20px_40px_rgba(124,92,252,0.06)]">
+<div class="flex justify-between items-center px-8 h-20 w-full max-w-7xl mx-auto">
+<div class="text-2xl font-bold tracking-tighter text-[#cabeff]">
+                ShinobiPass
+            </div>
+<div class="hidden md:flex gap-8 items-center">
+<a class="text-[#c9c4d8] hover:text-[#cabeff] transition-colors hover:bg-[#2a292f]/50 transition-all duration-300 px-3 py-2 rounded" href="#">Explore</a>
+<a class="text-[#c9c4d8] hover:text-[#cabeff] transition-colors hover:bg-[#2a292f]/50 transition-all duration-300 px-3 py-2 rounded" href="#">Create</a>
+<a class="text-[#c9c4d8] hover:text-[#cabeff] transition-colors hover:bg-[#2a292f]/50 transition-all duration-300 px-3 py-2 rounded" href="#">Docs</a>
+</div>
+<button class="bg-gradient-to-br from-[#7c5cfc] to-[#947dff] text-on-primary px-6 py-2.5 rounded-lg font-body font-medium hover:opacity-90 active:scale-95 transition-transform">Sign In</button>
+</div>
+</nav>
+<main class="flex-grow">
+<!-- Hero Section -->
+<section class="relative pt-32 pb-24 px-8 overflow-hidden">
+<!-- Ambient Glow -->
+<div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/5 rounded-full blur-[100px] pointer-events-none"></div>
+<div class="max-w-7xl mx-auto relative z-10 flex flex-col items-center text-center">
+<div class="flex flex-wrap justify-center gap-3 mb-4">
+<span class="bg-surface-container-highest px-4 py-1.5 rounded-full font-label text-sm text-on-surface-variant flex items-center gap-2 border border-outline-variant/15">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                        Built on Arc
+                    </span>
+<span class="bg-surface-container-highest px-4 py-1.5 rounded-full font-label text-sm text-on-surface-variant flex items-center gap-2 border border-outline-variant/15">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+                        Powered by USDC
+                    </span>
+<span class="bg-surface-container-highest px-4 py-1.5 rounded-full font-label text-sm text-on-surface-variant flex items-center gap-2 border border-outline-variant/15">
+<span class="material-symbols-outlined text-[16px]">bolt</span>
+                        Gasless UX
+                    </span>
+</div>
+<h1 class="font-headline text-[3.5rem] md:text-[5rem] lg:text-[6rem] leading-[1.1] tracking-[-0.04em] text-on-surface mb-6">
+                    Own Your <span class="text-transparent bg-clip-text bg-gradient-to-br from-primary to-primary-container">Ticket.</span>
+</h1>
+<p class="font-body text-xl md:text-2xl text-on-surface-variant max-w-2xl mb-12">
+                    NFT-powered event ticketing on Arc. Transparent, secure, and truly yours.
+                </p>
+<div class="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
+<button class="bg-gradient-to-br from-[#7c5cfc] to-primary-container text-on-primary px-8 py-4 rounded-lg font-body font-semibold text-lg hover:shadow-[0_0_40px_rgba(124,92,252,0.3)] transition-all">
+                        Explore Events
+                    </button>
+<button class="border border-[#7c5cfc] text-on-surface hover:bg-primary/5 px-8 py-4 rounded-lg font-body font-semibold text-lg transition-all">
+                        Create Event
+                    </button>
+</div>
+</div>
+</section>
+<!-- How it works -->
+<section class="py-24 px-8 bg-surface-container-low">
+<div class="max-w-7xl mx-auto">
+<div class="flex flex-col gap-12 items-center w-full">
+<div class="text-center max-w-2xl mx-auto">
+<h2 class="font-headline text-3xl tracking-tight mb-4">The Process</h2>
+<p class="text-on-surface-variant">Seamless ticketing infrastructure designed for the modern web.</p>
+</div>
+<div class="w-full grid grid-cols-1 md:grid-cols-3 gap-8">
+<!-- Step 1 -->
+<div class="relative pl-8 border-l border-outline-variant/15">
+<span class="absolute top-0 -left-[13px] bg-surface-container-low text-primary font-label text-sm w-6 h-6 flex items-center justify-center rounded-full border border-outline-variant/15">01</span>
+<h3 class="font-headline text-xl mb-2">Create</h3>
+<p class="text-on-surface-variant text-sm">Mint event contracts directly on Arc with zero friction.</p>
+</div>
+<!-- Step 2 -->
+<div class="relative pl-8 border-l border-outline-variant/15">
+<span class="absolute top-0 -left-[13px] bg-surface-container-low text-primary font-label text-sm w-6 h-6 flex items-center justify-center rounded-full border border-outline-variant/15">02</span>
+<h3 class="font-headline text-xl mb-2">Buy</h3>
+<p class="text-on-surface-variant text-sm">Purchase instantly with USDC. No gas fees, no hidden costs.</p>
+</div>
+<!-- Step 3 -->
+<div class="relative pl-8 border-l border-outline-variant/15">
+<span class="absolute top-0 -left-[13px] bg-surface-container-low text-primary font-label text-sm w-6 h-6 flex items-center justify-center rounded-full border border-outline-variant/15">03</span>
+<h3 class="font-headline text-xl mb-2">Attend</h3>
+<p class="text-on-surface-variant text-sm">Verify entry with cryptographic proof. Your ticket, your asset.</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Featured Events -->
+<section class="py-24 px-8 relative">
+<div class="max-w-7xl mx-auto">
+<div class="flex justify-between items-end mb-12">
+<h2 class="font-headline text-4xl tracking-tight">Featured Events</h2>
+<a class="text-primary hover:text-primary-container transition-colors flex items-center gap-1 font-body text-sm font-medium" href="#">
+                        View All <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</a>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+<!-- Event Card 1 -->
+<div class="bg-surface-container-lowest rounded-xl overflow-hidden hover:shadow-[0_0_40px_rgba(124,92,252,0.06)] hover:border-outline-variant/30 border border-transparent transition-all group">
+<div class="h-48 bg-surface-container-high relative overflow-hidden">
+<img alt="Event Cover" class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity duration-500" data-alt="a massive crowd at an underground electronic music concert with striking purple and blue laser lights cutting through the dark atmosphere" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDYsxHOj1ykeW0MpeJMA0Ph1quSCPXdvRdYv49XSw8kK5IKX_ivDK8UH4jLLS5jMassbPJ84-3yuZ1gkta-8uSyzjMJ4cw9fiwwAETKqPRg4lFEe39jiwNlBAkGBwovhfYl-Se_c_Zj2EJaGEu-qnFxsIi_YXPXrS3ZFQqRpX5OphuNX-G21OaVjPVJp_mieKTHke2vKPcW6kNErqnWrg-LDVV-kCBZWN0LYWCLg49odw8bXDwQnZPUqsMsQ3P74T4mFXJhqrK8Xgfi"/>
+<div class="absolute top-4 left-4 bg-surface-container-high/60 backdrop-blur-md px-3 py-1 rounded-full font-label text-xs border border-outline-variant/15 text-primary">
+                                FEB 24
+                            </div>
+<div class="absolute top-4 right-4 bg-[#7c5cfc] text-white px-3 py-1 rounded-full font-label text-xs font-bold tracking-wider">
+                                UPCOMING
+                            </div>
+</div>
+<div class="p-6">
+<h3 class="font-headline text-xl mb-2">Neon Nights: Tokyo</h3>
+<p class="text-on-surface-variant text-sm mb-4">Shibuya Underground • Electronic</p>
+<div class="text-xs font-label text-on-surface-variant mb-4">87 / 100 remaining</div>
+<div class="flex justify-between items-center border-t border-outline-variant/15 pt-4">
+<span class="font-label text-secondary">50.00 USDC</span>
+<button class="text-sm font-medium hover:text-primary transition-colors">Details</button>
+</div>
+</div>
+</div>
+<!-- Event Card 2 -->
+<div class="bg-surface-container-lowest rounded-xl overflow-hidden hover:shadow-[0_0_40px_rgba(124,92,252,0.06)] hover:border-outline-variant/30 border border-transparent transition-all group">
+<div class="h-48 bg-surface-container-high relative overflow-hidden">
+<img alt="Event Cover" class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity duration-500" data-alt="close up of a dj mixing desk illuminated by moody cyan and violet stage lights in a dark club environment" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDi9zUkQIznY_5HoN5ozZ4Vhtz9oJ7uHeH65rG-HSNHIXF428PFh1mA4GzI5Y5NOdu6vqrb7J7DqpIV9zHb6nESrG4gpDdj6EXwF5OnBUkiKio1bmvKZgSvSfavpUms9F6QsJMFHD1mt_dnNDmeZGlOXw3ZMLZUFv1kQUURsySFf58aUiToUPWj-BMjGUpMjqWZeoQlQi6Q-YbnIQF6r4fw3y5a4VHbxsjyix75rEYLYN4lHiUQcwqCuHyds_R6_tZkrkaKxgmD2bvo"/>
+<div class="absolute top-4 left-4 bg-surface-container-high/60 backdrop-blur-md px-3 py-1 rounded-full font-label text-xs border border-outline-variant/15 text-primary">
+                                MAR 12
+                            </div>
+<div class="absolute top-4 right-4 bg-[#7c5cfc] text-white px-3 py-1 rounded-full font-label text-xs font-bold tracking-wider">
+                                UPCOMING
+                            </div>
+</div>
+<div class="p-6">
+<h3 class="font-headline text-xl mb-2">Arc Summit 2024</h3>
+<p class="text-on-surface-variant text-sm mb-4">Berlin • Web3 Conference</p>
+<div class="text-xs font-label text-on-surface-variant mb-4">42 / 200 remaining</div>
+<div class="flex justify-between items-center border-t border-outline-variant/15 pt-4">
+<span class="font-label text-secondary">150.00 USDC</span>
+<button class="text-sm font-medium hover:text-primary transition-colors">Details</button>
+</div>
+</div>
+</div>
+<!-- Event Card 3 -->
+<div class="bg-surface-container-lowest rounded-xl overflow-hidden hover:shadow-[0_0_40px_rgba(124,92,252,0.06)] hover:border-outline-variant/30 border border-transparent transition-all group">
+<div class="h-48 bg-surface-container-high relative overflow-hidden">
+<img alt="Event Cover" class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity duration-500" data-alt="silhouette of a performer on stage against a dramatic backdrop of bright white and deep purple fog and stage lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAKf3b__hZcUw69yorDyXAx6qOQPwubBBeGiFO0c3Js5rdAoGt7C1td_hTVoCMnudH3mEXDc-KX8ONBtFutJ2oY5JxIeQjpuzqddVHsmK8LJLKvCx3nOLD1NZTvZE9BaHg7cIjAr1j13MIEfIEusCi9gDiulXOi6aMabghfr7zC73DgE7mYhwFH8MmJUOciAmAgzqqe7nw-tr1eTbdbBwhCfQJ4dfBDr14FWSCZcrlJ3DDZrVktdKYMZX2VRONsbU3w5zobkZjP8tZd"/>
+<div class="absolute top-4 left-4 bg-surface-container-high/60 backdrop-blur-md px-3 py-1 rounded-full font-label text-xs border border-outline-variant/15 text-primary">
+                                APR 05
+                            </div>
+<div class="absolute top-4 right-4 bg-[#7c5cfc] text-white px-3 py-1 rounded-full font-label text-xs font-bold tracking-wider">
+                                UPCOMING
+                            </div>
+</div>
+<div class="p-6">
+<h3 class="font-headline text-xl mb-2">The Obsidian Tour</h3>
+<p class="text-on-surface-variant text-sm mb-4">London • Live Music</p>
+<div class="text-xs font-label text-on-surface-variant mb-4">15 / 50 remaining</div>
+<div class="flex justify-between items-center border-t border-outline-variant/15 pt-4">
+<span class="font-label text-secondary">85.00 USDC</span>
+<button class="text-sm font-medium hover:text-primary transition-colors">Details</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="bg-[#0a0a0f] text-[#cabeff] font-['Inter'] text-sm w-full py-12 flex flex-col md:flex-row justify-between items-center px-8 max-w-7xl mx-auto gap-8 mt-auto relative z-10 border-t border-[#c9c4d8]/15 bg-surface-dim">
+<div class="text-xl font-bold tracking-tighter text-[#cabeff]">
+            ShinobiPass
+        </div>
+<div class="flex gap-6">
+<a class="text-[#c9c4d8] hover:text-[#41eec2] transition-colors opacity-80 hover:opacity-100" href="#">Explore</a>
+<a class="text-[#c9c4d8] hover:text-[#41eec2] transition-colors opacity-80 hover:opacity-100" href="#">Create</a>
+<a class="text-[#c9c4d8] hover:text-[#41eec2] transition-colors opacity-80 hover:opacity-100" href="#">Docs</a>
+</div>
+<div class="text-[#c9c4d8]">
+            © 2025 ShinobiPass. Built on Arc.
+        </div>
+</footer>
+</body></html>
