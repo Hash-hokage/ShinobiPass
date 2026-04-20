@@ -2,10 +2,10 @@
 
 import { useState } from "react";
 import { useReadContract } from "wagmi";
-import { EVENT_TICKET_ABI, EVENT_TICKET_ADDRESS } from "@/lib/contract";
+import { EVENT_TICKET_ABI, EVENT_TICKET_ADDRESS, USDC_ADDRESS, erc20Abi } from "@/lib/contract";
 import { Navbar } from "@/components/Navbar";
 import { useSmartWallet } from "@/hooks/useSmartWallet";
-import { formatUnits } from "viem";
+import { formatUnits, encodeFunctionData } from "viem";
 import { openTransakWidget } from "@/lib/transak";
 
 export default function EventDetailPage({ params }: { params: { id: string } }) {
@@ -18,8 +18,7 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
     abi: EVENT_TICKET_ABI,
     functionName: "events",
     args: [eventId],
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  }) as { data: any[] | undefined };
+  }) as { data: any | undefined };
 
   if (!eventInfo) {
     return (
@@ -35,40 +34,57 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
     );
   }
 
-  const name = eventInfo[0];
-  const desc = eventInfo[1];
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const _organizer = eventInfo[2];
-  const date = Number(eventInfo[4]);
-  const maxSupply = Number(eventInfo[7]);
-  const minted = Number(eventInfo[8]);
-  const status = Number(eventInfo[6]);
-  const price = eventInfo[5];
-  const bannerUrl = eventInfo[13] || "";
+  // ABI Mapping: [name, venue, organizer, escrowBalance, date, price, status, maxSupply, minted, resaleAllowed, royaltyReceiver, resalePriceCap, royaltyFeeBps, imageURI]
+  const [
+    name,
+    venue,
+    _organizer,
+    _escrowBalance,
+    date,
+    price,
+    status,
+    maxSupply,
+    minted,
+    _resaleAllowed,
+    _royaltyReceiver,
+    _resalePriceCap,
+    _royaltyFeeBps,
+    imageURI
+  ] = eventInfo;
 
-  const isSoldOut = minted >= maxSupply;
-  const isCancelled = status === 1;
+  const isSoldOut = Number(minted) >= Number(maxSupply);
+  const isCancelled = Number(status) === 1;
 
   const handleMintWithUSDC = async () => {
     if (!isConnected) return connect();
     try {
       setIsMinting(true);
-      // Dummy userOp interaction for Minting
+
+      const approveData = encodeFunctionData({
+        abi: erc20Abi,
+        functionName: 'approve',
+        args: [EVENT_TICKET_ADDRESS, price]
+      });
+
+      const mintData = encodeFunctionData({
+        abi: EVENT_TICKET_ABI,
+        functionName: 'mintTicket',
+        args: [eventId]
+      });
+
       await sendUserOp([
-        // Provide allowance to EventTicket
         {
-           to: "0x3600000000000000000000000000000000000000", // USDC
-           data: "0x095ea7b3" + EVENT_TICKET_ADDRESS.replace("0x", "").padStart(64, '0') + price.toString(16).padStart(64, '0') 
+           to: USDC_ADDRESS,
+           data: approveData
         },
-        // Mint Ticket
         {
            to: EVENT_TICKET_ADDRESS,
-           data: "0x256d52f6" + eventId.toString(16).padStart(64, '0')
+           data: mintData
         }
       ]);
       alert("Mint successful!");
     } catch (e: unknown) {
-      alert("Failed to mint: " + (e instanceof Error ? e.message : String(e)));
+      alert("Failed to mint: " + (err instanceof Error ? err.message : String(err)));
     } finally {
       setIsMinting(false);
     }

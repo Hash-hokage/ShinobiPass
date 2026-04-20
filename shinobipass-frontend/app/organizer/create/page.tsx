@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { EVENT_TICKET_ADDRESS } from "@/lib/contract";
+import { EVENT_TICKET_ABI, EVENT_TICKET_ADDRESS } from "@/lib/contract";
 import { useSmartWallet } from "@/hooks/useSmartWallet";
 import { Navbar } from "@/components/Navbar";
-import { parseUnits } from "viem";
+import { parseUnits, encodeFunctionData } from "viem";
 
 export default function CreateEventPage() {
   const { isConnected, address, sendUserOp, connect } = useSmartWallet();
@@ -29,21 +29,33 @@ export default function CreateEventPage() {
     
     setIsSubmitting(true);
     try {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const _dateUnix = Math.floor(new Date(form.date).getTime() / 1000);
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const _priceWei = parseUnits(form.ticketPrice, 6);
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const _usdcRecipient = form.usdcRecipient || address; // default to creator
+      const dateUnix = BigInt(Math.floor(new Date(form.date).getTime() / 1000));
+      const priceWei = parseUnits(form.ticketPrice, 6);
+      const usdcRecipient = (form.usdcRecipient || address) as `0x${string}`;
+      const maxSupply = BigInt(form.maxSupply);
+      const resalePriceCap = (priceWei * BigInt(form.resaleCapMultiplier)) / 100n;
       
-      // We would use the ABI encoding here to call createEvent
-      // For demo, we simulate the structure of createEvent(string, string, uint256, uint256, uint256, bool, uint256, address, uint96, string)
-      // Since ABI encoder from viem is cleaner, we'd normally use encodeFunctionData, but since we rely on the provider layer, we mock the call if needed.
+      const data = encodeFunctionData({
+        abi: EVENT_TICKET_ABI,
+        functionName: 'createEvent',
+        args: [
+          form.name,
+          form.description, // using description as venue for MVP
+          dateUnix,
+          priceWei,
+          maxSupply,
+          form.isResaleAllowed,
+          resalePriceCap,
+          usdcRecipient,
+          500, // Default 5% royalty fee (500 bps)
+          form.bannerUrl
+        ]
+      });
       
       await sendUserOp([
          {
            to: EVENT_TICKET_ADDRESS,
-           data: "0xaf40e758" // createEvent selector for demo, ideally encodeFunctionData({abi, functionName: 'createEvent', args: [...]})
+           data
          }
       ]);
       
