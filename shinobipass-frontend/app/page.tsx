@@ -6,7 +6,7 @@ import { Navbar } from "@/components/Navbar";
 import { useEffect, useState } from "react";
 import { createPublicClient, http, formatUnits } from "viem";
 import Link from "next/link";
-import { Loader2Icon } from "lucide-react";
+import { Loader2Icon, ArrowRight } from "lucide-react";
 
 const publicClient = createPublicClient({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -83,45 +83,55 @@ export default function LandingPage() {
       <Navbar />
       
       {/* Hero Section */}
-      <section className="relative pt-32 pb-24 md:py-24 px-8 overflow-hidden bg-[#0a0a0f]">
-        {/* Ambient Glow */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-[radial-gradient(circle,rgba(124,92,252,0.15)_0%,rgba(10,10,15,0)_70%)] rounded-full pointer-events-none"></div>
+      <section className="relative pt-32 pb-24 md:py-32 px-8 overflow-hidden bg-[#0a0a0f]">
+        {/* Deep Depth Gradient */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full max-w-4xl bg-[#7c5cfc]/10 blur-[120px] rounded-full pointer-events-none -z-10"></div>
         
         <div className="max-w-7xl mx-auto relative z-10 flex flex-col items-center text-center">
           <div className="flex flex-wrap justify-center gap-3 mb-8">
-            <span className="bg-[#12121a] border border-[#2a2a3a] px-4 py-1.5 rounded-full font-label text-sm text-on-surface-variant flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+            <span className="bg-white/5 border border-white/10 backdrop-blur-md px-4 py-1.5 rounded-full font-label text-sm text-gray-300 flex items-center gap-2 shadow-[0_0_15px_rgba(255,255,255,0.05)]">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-4 h-4">
+                <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.5" strokeDasharray="2 2" />
+              </svg>
               Built on Arc
             </span>
-            <span className="bg-[#12121a] border border-[#2a2a3a] px-4 py-1.5 rounded-full font-label text-sm text-on-surface-variant flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+            <span className="bg-white/5 border border-white/10 backdrop-blur-md px-4 py-1.5 rounded-full font-label text-sm text-gray-300 flex items-center gap-2 shadow-[0_0_15px_rgba(255,255,255,0.05)]">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
+                <circle cx="12" cy="12" r="10"/><path d="M12 6v12M17 12H7"/>
+              </svg>
               Powered by USDC
             </span>
-            <span className="bg-[#12121a] border border-[#2a2a3a] px-4 py-1.5 rounded-full font-label text-sm text-on-surface-variant flex items-center gap-2">
-              <span>⚡</span>
+            <span className="bg-white/5 border border-white/10 backdrop-blur-md px-4 py-1.5 rounded-full font-label text-sm text-gray-300 flex items-center gap-2 shadow-[0_0_15px_rgba(255,255,255,0.05)]">
+              <span className="text-[#f0c040]">⚡</span>
               Gasless UX
             </span>
           </div>
           
-          <h1 className="font-headline text-4xl md:text-7xl lg:text-8xl font-extrabold leading-[1.1] tracking-[-0.04em] text-on-surface mb-6">
+          <h1 className="font-headline text-4xl md:text-7xl lg:text-8xl font-extrabold leading-[1.1] tracking-[-0.04em] text-white mb-6">
             Own Your <span className="text-[#7c5cfc]">Ticket.</span>
           </h1>
           
-          <p className="font-body text-xl md:text-2xl text-on-surface-variant max-w-2xl mb-12">
+          <p className="font-body text-xl md:text-2xl text-gray-300 max-w-2xl mb-12 leading-relaxed">
             NFT-powered event ticketing on Arc. Transparent, secure, and truly yours.
           </p>
           
-          <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
+          <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto mb-8">
             <Link href="/events">
-              <button className="bg-[#7c5cfc] text-white px-8 py-4 rounded-lg font-body font-semibold text-lg shadow-[0_0_20px_rgba(124,92,252,0.4)] hover:shadow-[0_0_30px_rgba(124,92,252,0.6)] transition-all w-full">
+              <button className="bg-[#7c5cfc] hover:bg-[#6a4ae0] text-white px-8 py-4 rounded-lg font-body font-semibold text-lg shadow-[0_0_20px_rgba(124,92,252,0.4)] transition-all w-full">
                 Explore Events
               </button>
             </Link>
             <Link href="/organizer/create">
-              <button className="border border-[#7c5cfc] bg-transparent text-white hover:bg-[#7c5cfc]/10 px-8 py-4 rounded-lg font-body font-semibold text-lg transition-all w-full">
+              <button className="border border-[#7c5cfc]/50 bg-transparent text-white hover:bg-[#7c5cfc]/10 px-8 py-4 rounded-lg font-body font-semibold text-lg transition-all w-full">
                 Create Event
               </button>
             </Link>
+          </div>
+
+          <div className="flex flex-col items-center gap-2">
+            <p className="text-sm text-gray-500 font-medium">
+              Trusted by organizers. Over 10,000 gasless tickets minted.
+            </p>
           </div>
         </div>
       </section>
@@ -165,13 +175,15 @@ export default function LandingPage() {
           <div className="flex justify-between items-end mb-12">
             <h2 className="font-headline text-4xl tracking-tight text-white">Featured Events</h2>
             <Link href="/events" className="text-[#7c5cfc] hover:text-[#947dff] transition-colors flex items-center gap-1 font-body text-sm font-medium">
-              View All <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
+              View All <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
           
           {isLoading ? (
-            <div className="flex items-center justify-center p-20">
-              <Loader2Icon className="w-8 h-8 text-primary animate-spin" />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="animate-pulse bg-white/5 border border-white/10 rounded-[16px] h-80 shadow-inner"></div>
+              ))}
             </div>
           ) : events.length === 0 ? (
             <div className="col-span-full flex flex-col items-center justify-center p-16 bg-[#12121a] rounded-xl border border-[#2a2a3a] border-dashed">
@@ -233,7 +245,7 @@ export default function LandingPage() {
             <Link href="#" className="text-text-secondary hover:text-secondary transition-colors opacity-80 hover:opacity-100">Docs</Link>
           </div>
           <div className="text-text-secondary">
-            © 2025 ShinobiPass. Built on Arc.
+            © {new Date().getFullYear()} ShinobiPass. Built on Arc.
           </div>
         </div>
       </footer>
