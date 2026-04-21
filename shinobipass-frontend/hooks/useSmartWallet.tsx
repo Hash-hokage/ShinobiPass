@@ -16,6 +16,7 @@ type SmartWalletContextType = {
   connect: (email?: string) => Promise<void>;
   disconnect: () => void;
   sendUserOp: (calls: { to: string; value?: bigint; data: string }[]) => Promise<string>;
+  waitForUserOp: (userOpHash: string) => Promise<any>;
 };
 
 const SmartWalletContext = createContext<SmartWalletContextType>({} as any);
@@ -98,11 +99,18 @@ export function ZeroDevWrapper({ children }: { children: React.ReactNode }) {
         }))),
       },
     });
-    return userOpHash; // simplified for testnet; normally you'd wait for the receipt
+    return userOpHash;
+  };
+
+  const waitForUserOp = async (userOpHash: string) => {
+    if (!smartAccountClient) throw new Error("Not connected");
+    return smartAccountClient.waitForUserOperationReceipt({
+      hash: userOpHash as `0x${string}`,
+    });
   };
 
   return (
-    <SmartWalletContext.Provider value={{ smartAccount: smartAccountClient, isConnected, address, connect, disconnect, sendUserOp }}>
+    <SmartWalletContext.Provider value={{ smartAccount: smartAccountClient, isConnected, address, connect, disconnect, sendUserOp, waitForUserOp }}>
       {children}
     </SmartWalletContext.Provider>
   );
