@@ -71,14 +71,12 @@ export function Navbar() {
 
             <div className="flex flex-col gap-4">
               <button 
-                onClick={() => {
-                  connect();
-                  setIsModalOpen(false);
-                }}
-                className="bg-white text-black hover:bg-gray-200 w-full py-3.5 rounded-xl font-semibold flex justify-center items-center gap-2 transition-colors"
+                disabled={true}
+                className="bg-white text-black opacity-50 cursor-not-allowed w-full py-3.5 rounded-xl font-semibold flex items-center px-6 gap-2 transition-colors"
               >
                 <Mail className="w-5 h-5" />
-                Continue with Email / Google
+                <span>Continue with Email / Google</span>
+                <span className="text-[10px] uppercase tracking-wider bg-purple-500/20 text-purple-500 px-2 py-0.5 rounded-full ml-auto">Coming Soon</span>
               </button>
 
               <button 

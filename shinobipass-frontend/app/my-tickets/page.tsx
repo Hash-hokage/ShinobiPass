@@ -1,13 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { EVENT_TICKET_ABI, EVENT_TICKET_ADDRESS } from "@/lib/contract";
+import { EVENT_TICKET_ABI, EVENT_TICKET_ADDRESS, arcTestnet } from "@/lib/contract";
 import { useSmartWallet } from "@/hooks/useSmartWallet";
-import { createPublicClient, http } from "viem";
-import { arcTestnet } from "@/lib/contract";
+import { createPublicClient, http, parseAbiItem } from "viem";
 import { Navbar } from "@/components/Navbar";
+import Link from "next/link";
+import { TicketIcon, Search, Loader2 } from "lucide-react";
 
-// Basic fallback client to read contract without connected wallet state if needed
 const publicClient = createPublicClient({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   chain: arcTestnet as any,
@@ -28,63 +28,112 @@ export default function MyTicketsPage() {
       }
       setIsLoading(true);
       try {
-        // TODO: Replace with sub-graph indexer
-        // Scanning token IDs from 0 to 500 to find user's tickets (inefficient but required by specs for MVP)
-        const userTickets = [];
-        
-        // This logic is extremely slow if done synchronously for 500 items, we can pipeline them in chunks.
-        const chunkSize = 50;
-        for (let i = 0; i < 500; i += chunkSize) {
-          const promises = [];
-          for (let j = 0; j < chunkSize; j++) {
-            const tokenId = BigInt(i + j);
-            promises.push(
-              publicClient.readContract({
-                address: EVENT_TICKET_ADDRESS as `0x${string}`,
-                abi: EVENT_TICKET_ABI,
-                functionName: "ownerOf",
-                args: [tokenId],
-              }).then(owner => ({ tokenId, owner })).catch(() => null)
-            );
-          }
-          
-          const results = await Promise.all(promises);
-          for (const res of results) {
-            if (res && typeof res.owner === "string" && res.owner.toLowerCase() === address.toLowerCase()) {
-              // We found a ticket owned by the user! Let's get ticket details.
-              const ticketInfo = await publicClient.readContract({
-                address: EVENT_TICKET_ADDRESS as `0x${string}`,
-                abi: EVENT_TICKET_ABI,
-                functionName: "tickets",
-                args: [res.tokenId],
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              }) as unknown as any[];
-              
-              const eventId = ticketInfo[0];
-              const eventInfo = await publicClient.readContract({
-                address: EVENT_TICKET_ADDRESS as `0x${string}`,
-                abi: EVENT_TICKET_ABI,
-                functionName: "events",
-                args: [eventId],
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              }) as unknown as any[];
+        // 1. Fetch all Transfer events to the user
+        const logs = await publicClient.getLogs({
+          address: EVENT_TICKET_ADDRESS as `0x${string}`,
+          event: parseAbiItem('event Transfer(address indexed from, address indexed to, uint256 indexed tokenId)'),
+          args: {
+            to: address as `0x${string}`
+          },
+          fromBlock: 0n // or deployment block
+        });
 
-              userTickets.push({
-                tokenId: res.tokenId.toString(),
-                eventId: eventId.toString(),
-                eventName: eventInfo[0] as string,
-                eventDate: Number(eventInfo[4] || eventInfo[3]), // Contract ABI update mapping
-                isUsed: ticketInfo[2] as boolean,
-                isListed: ticketInfo[4] as boolean,
-                resalePrice: ticketInfo[3].toString(),
-              });
-            }
+        if (logs.length === 0) {
+          setTickets([]);
+          return;
+        }
+
+        // 2. Extract unique token IDs
+        const candidateIds = Array.from(new Set(logs.map(log => log.args.tokenId!)));
+
+        // 3. Verify current ownership and fetch ticket data in batch
+        const verificationCalls = candidateIds.flatMap(tokenId => [
+          {
+            address: EVENT_TICKET_ADDRESS as `0x${string}`,
+            abi: EVENT_TICKET_ABI,
+            functionName: 'ownerOf',
+            args: [tokenId]
+          },
+          {
+            address: EVENT_TICKET_ADDRESS as `0x${string}`,
+            abi: EVENT_TICKET_ABI,
+            functionName: 'tickets',
+            args: [tokenId]
+          }
+        ]);
+
+        const verificationResults = await publicClient.multicall({
+          contracts: verificationCalls,
+          allowFailure: true
+        });
+
+        const verifiedTickets: any[] = [];
+        const eventIdsToFetch = new Set<bigint>();
+
+        for (let i = 0; i < candidateIds.length; i++) {
+          const ownerOfRes = verificationResults[i * 2];
+          const ticketRes = verificationResults[i * 2 + 1];
+
+          if (
+            ownerOfRes.status === 'success' && 
+            (ownerOfRes.result as string).toLowerCase() === address.toLowerCase() &&
+            ticketRes.status === 'success'
+          ) {
+            const ticketData = ticketRes.result as any[];
+            const eventId = ticketData[0] as bigint;
+            eventIdsToFetch.add(eventId);
+
+            verifiedTickets.push({
+              tokenId: candidateIds[i].toString(),
+              eventId,
+              seatNumber: ticketData[1],
+              isUsed: ticketData[2],
+              resalePrice: ticketData[3],
+              isListed: (ticketData[3] as bigint) > 0n
+            });
           }
         }
-        
-        setTickets(userTickets);
+
+        if (verifiedTickets.length === 0) {
+          setTickets([]);
+          return;
+        }
+
+        // 4. Fetch Event metadata for the owned tickets
+        const uniqueEventIds = Array.from(eventIdsToFetch);
+        const eventCalls = uniqueEventIds.map(eventId => ({
+          address: EVENT_TICKET_ADDRESS as `0x${string}`,
+          abi: EVENT_TICKET_ABI,
+          functionName: 'events',
+          args: [eventId]
+        }));
+
+        const eventResults = await publicClient.multicall({
+          contracts: eventCalls,
+          allowFailure: true
+        });
+
+        const eventMap = new Map();
+        uniqueEventIds.forEach((id, idx) => {
+          if (eventResults[idx].status === 'success') {
+            eventMap.set(id.toString(), eventResults[idx].result);
+          }
+        });
+
+        // 5. Final Assembly
+        const finalTickets = verifiedTickets.map(t => {
+          const ev = eventMap.get(t.eventId.toString());
+          return {
+            ...t,
+            eventName: ev ? ev[0] : "Unknown Event",
+            eventDate: ev ? Number(ev[4]) : 0,
+            eventId: t.eventId.toString()
+          };
+        });
+
+        setTickets(finalTickets.sort((a, b) => Number(b.tokenId) - Number(a.tokenId)));
       } catch (e) {
-        console.error(e);
+        console.error("Error fetching vault:", e);
       } finally {
         setIsLoading(false);
       }
@@ -95,15 +144,18 @@ export default function MyTicketsPage() {
 
   if (!isConnected) {
     return (
-      <div className="min-h-screen bg-background flex flex-col">
+      <div className="min-h-screen bg-[#0a0a0f] flex flex-col">
         <Navbar />
         <div className="flex-1 flex items-center justify-center p-8">
-          <div className="bg-surface-container-lowest p-10 rounded-2xl text-center max-w-md w-full border border-outline-variant/15 shadow-ambient flex flex-col items-center">
-            <span className="material-symbols-outlined text-[48px] text-primary mb-4">confirmation_number</span>
-            <h2 className="text-2xl font-bold font-headline text-on-surface mb-2">My Tickets</h2>
-            <p className="text-on-surface-variant font-body mb-8">Connect your wallet to view your tickets.</p>
-            <button onClick={() => connect()} className="w-full py-3 bg-primary text-on-primary font-bold font-body rounded hover:opacity-90 transition-opacity">
-              Connect Wallet
+          <div className="bg-white/5 backdrop-blur-md p-10 rounded-2xl text-center max-w-md w-full border border-white/10 shadow-2xl flex flex-col items-center">
+            <TicketIcon className="w-16 h-16 text-[#7c5cfc] mb-6 opacity-80" />
+            <h2 className="text-3xl font-bold font-headline text-white mb-3">Your Vault</h2>
+            <p className="text-gray-400 font-body mb-8">Connect your secure smart account to view and manage your digital collectibles.</p>
+            <button 
+              onClick={() => connect()} 
+              className="w-full py-4 bg-[#7c5cfc] hover:bg-[#6a4ae0] text-white font-bold font-body rounded-xl shadow-[0_0_20px_rgba(124,92,252,0.3)] transition-all active:scale-[0.98]"
+            >
+              Sign In to Access
             </button>
           </div>
         </div>
@@ -112,62 +164,75 @@ export default function MyTicketsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col relative overflow-hidden">
-      {/* Background glow specific to My Tickets */}
-      <div className="absolute top-[-10%] inset-x-0 mx-auto w-[60%] h-[40%] bg-primary/10 blur-[140px] mix-blend-screen rounded-full pointer-events-none transition-all"></div>
+    <div className="min-h-screen bg-[#0a0a0f] flex flex-col relative overflow-hidden">
+      {/* Deep Background Depth */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full max-w-6xl bg-[#7c5cfc]/5 blur-[120px] rounded-full pointer-events-none -z-10"></div>
       
       <Navbar />
 
-      <main className="flex-1 w-full max-w-7xl mx-auto px-8 py-12 z-10 flex flex-col gap-12 mt-8">
+      <main className="flex-1 w-full max-w-7xl mx-auto px-8 py-12 z-10 flex flex-col gap-12 mt-16">
         <div className="flex flex-col gap-2">
-           <h1 className="text-5xl font-bold font-headline text-on-surface tracking-tight">Your Vault</h1>
-           <p className="text-on-surface-variant font-body mb-2">Manage your exclusive event credentials.</p>
+           <h1 className="text-5xl md:text-6xl font-extrabold font-headline text-white tracking-tight">Digital Vault</h1>
+           <p className="text-gray-400 text-lg font-body">Manage your verified event credentials and collectibles.</p>
         </div>
         
         {isLoading ? (
-          <div className="flex flex-col items-center justify-center py-20 text-on-surface-variant">
-             <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4"></div>
-            <p className="font-mono text-sm tracking-widest uppercase">Decrypting vault contents...</p>
+          <div className="flex flex-col items-center justify-center py-20 text-gray-500 gap-4">
+            <Loader2 className="w-10 h-10 animate-spin text-[#7c5cfc]" />
+            <p className="font-mono text-xs uppercase tracking-[0.2em] animate-pulse">Synchronizing vault with Arc ledger...</p>
           </div>
         ) : tickets.length === 0 ? (
-          <div className="text-center py-32 bg-surface-container-lowest rounded-2xl border border-outline-variant/15 border-dashed shadow-inner flex flex-col items-center">
-            <span className="text-5xl mb-4 block mix-blend-luminosity opacity-80">📭</span>
-            <p className="text-on-surface-variant font-body mb-4 text-lg">No tickets found in your vault.</p>
-            <button className="text-primary font-mono text-xs uppercase tracking-widest hover:underline decoration-primary underline-offset-4">Explore events -{'>'}</button>
+          <div className="text-center py-32 bg-white/5 rounded-2xl border border-white/10 border-dashed backdrop-blur-sm flex flex-col items-center gap-6">
+            <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center border border-white/10">
+              <Search className="w-8 h-8 text-gray-600" />
+            </div>
+            <div className="max-w-md">
+              <h3 className="text-xl font-bold text-white mb-2">Vault is Empty</h3>
+              <p className="text-gray-400 mb-8">You haven&apos;t secured any tickets yet. Explore the marketplace to find your next experience.</p>
+              <Link href="/events">
+                <button className="bg-white/5 hover:bg-white/10 border border-white/10 text-white px-8 py-3 rounded-xl font-semibold transition-all flex items-center gap-2 mx-auto group">
+                  Explore Events <span className="group-hover:translate-x-1 transition-transform">→</span>
+                </button>
+              </Link>
+            </div>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {tickets.map(t => (
-              <div key={t.tokenId} className={`bg-surface-container-lowest border-l-[3px] ${t.isUsed ? 'border-l-outline-variant/30 opacity-60' : 'border-l-primary'} rounded-xl overflow-hidden hover:shadow-glow transition-all hover:-translate-y-1 duration-300 border border-outline-variant/15 border-y-0 border-r-0 flex flex-col`}>
-                <div className="p-6 border-b border-outline-variant/15 bg-surface-container/30">
-                  <div className="flex justify-between items-start mb-2">
-                    <h3 className="font-bold text-xl font-headline text-on-surface line-clamp-1">{t.eventName}</h3>
-                    <div className="bg-surface-container-high px-2 py-1 rounded text-xs font-mono font-bold tracking-widest text-on-surface-variant">
-                      #{t.tokenId}
+              <div key={t.tokenId} className={`group bg-white/5 backdrop-blur-md rounded-2xl overflow-hidden border border-white/10 hover:border-[#7c5cfc]/50 hover:shadow-[0_0_30px_rgba(124,92,252,0.15)] transition-all duration-500 flex flex-col ${t.isUsed ? 'opacity-60 grayscale-[0.5]' : ''}`}>
+                <div className="p-8 border-b border-white/5 bg-gradient-to-br from-white/[0.02] to-transparent">
+                  <div className="flex justify-between items-start mb-4">
+                    <div className="bg-[#7c5cfc]/10 border border-[#7c5cfc]/20 px-3 py-1 rounded-full text-[10px] font-bold tracking-[0.2em] text-[#947dff] uppercase">
+                      Ticket #{t.tokenId}
                     </div>
+                    {t.isUsed && (
+                      <span className="text-[10px] font-bold text-gray-500 tracking-widest uppercase bg-white/5 px-2 py-1 rounded">Used</span>
+                    )}
                   </div>
-                  <p className="text-sm text-on-surface-variant font-mono">
-                    {new Date(t.eventDate * 1000).toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' })}
-                  </p>
+                  <h3 className="font-bold text-2xl font-headline text-white mb-2 line-clamp-2 leading-tight">{t.eventName}</h3>
+                  <div className="flex items-center gap-2 text-gray-400 font-mono text-xs">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#7c5cfc]"></span>
+                    {new Date(t.eventDate * 1000).toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' })}
+                  </div>
                 </div>
                 
-                <div className="p-6 flex flex-col gap-4 bg-surface-container-lowest flex-1 justify-end">
+                <div className="p-8 flex flex-col gap-4 flex-1 justify-end bg-black/20">
                   {t.isUsed ? (
-                    <div className="bg-surface-container-high border border-outline-variant/15 text-on-surface-variant text-sm px-4 py-3 rounded uppercase tracking-widest font-mono font-bold text-center">
-                      Scanned & Used
+                    <div className="w-full py-4 border border-white/5 text-gray-500 text-xs px-4 rounded-xl uppercase tracking-widest font-bold text-center">
+                      Scanned & Verified
                     </div>
                   ) : t.isListed ? (
-                    <div className="bg-primary-container border border-primary-container/50 text-on-primary-container text-sm px-3 py-3 rounded font-mono text-center flex flex-col gap-1">
-                      <span className="font-bold uppercase tracking-wider text-xs">Listed for Resale</span>
-                      <span className="text-base font-bold">{Number(t.resalePrice) / 1000000} USDC</span>
+                    <div className="bg-[#7c5cfc]/10 border border-[#7c5cfc]/20 text-white p-4 rounded-xl flex flex-col gap-1 text-center">
+                      <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#947dff]">Listed for Resale</span>
+                      <span className="text-xl font-bold font-mono">{Number(t.resalePrice) / 1000000} USDC</span>
                     </div>
                   ) : (
-                    <div className="flex gap-3 mt-auto pt-2">
-                      <button className="flex-1 bg-on-surface text-surface hover:bg-on-surface/90 py-2.5 rounded text-sm font-bold font-body transition-colors flex items-center justify-center gap-2">
-                        <span className="material-symbols-outlined text-[18px]">qr_code_2</span> Show QR
+                    <div className="grid grid-cols-2 gap-3">
+                      <button className="bg-white text-black hover:bg-gray-200 py-3 rounded-xl text-sm font-bold transition-all active:scale-[0.98]">
+                        Show QR
                       </button>
-                      <button className="flex-1 border border-primary text-primary hover:bg-primary/5 py-2.5 rounded text-sm font-bold font-body transition-colors flex items-center justify-center gap-2">
-                        <span className="material-symbols-outlined text-[18px]">sell</span> List
+                      <button className="bg-white/5 border border-white/10 text-white hover:bg-white/10 py-3 rounded-xl text-sm font-bold transition-all active:scale-[0.98]">
+                        List
                       </button>
                     </div>
                   )}
