@@ -6,12 +6,12 @@ import { Navbar } from "@/components/Navbar";
 import { useEffect, useState } from "react";
 import { createPublicClient, http, formatUnits } from "viem";
 import Link from "next/link";
-import { Loader2Icon, ArrowRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
 const publicClient = createPublicClient({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   chain: arcTestnet as any,
-  transport: http(process.env.NEXT_PUBLIC_ARC_RPC || "https://rpc.arc.testnet.circle.com"),
+  transport: http(process.env.NEXT_PUBLIC_ARC_RPC || "https://rpc.blockdaemon.testnet.arc.network"),
 });
 
 export default function LandingPage() {

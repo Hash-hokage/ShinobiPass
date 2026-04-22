@@ -11,7 +11,7 @@ import { TicketIcon, Search, Loader2 } from "lucide-react";
 const publicClient = createPublicClient({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   chain: arcTestnet as any,
-  transport: http(process.env.NEXT_PUBLIC_ARC_RPC || "https://rpc.arc.testnet.circle.com"),
+  transport: http(process.env.NEXT_PUBLIC_ARC_RPC || "https://rpc.blockdaemon.testnet.arc.network"),
 });
 
 export default function MyTicketsPage() {
@@ -35,7 +35,7 @@ export default function MyTicketsPage() {
           args: {
             to: address as `0x${string}`
           },
-          fromBlock: 0n // or deployment block
+          fromBlock: BigInt(0) // or deployment block
         });
 
         if (logs.length === 0) {
@@ -67,6 +67,7 @@ export default function MyTicketsPage() {
           allowFailure: true
         });
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const verifiedTickets: any[] = [];
         const eventIdsToFetch = new Set<bigint>();
 
@@ -79,7 +80,8 @@ export default function MyTicketsPage() {
             (ownerOfRes.result as string).toLowerCase() === address.toLowerCase() &&
             ticketRes.status === 'success'
           ) {
-            const ticketData = ticketRes.result as any[];
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const ticketData = ticketRes.result as unknown as any[];
             const eventId = ticketData[0] as bigint;
             eventIdsToFetch.add(eventId);
 
@@ -89,7 +91,7 @@ export default function MyTicketsPage() {
               seatNumber: ticketData[1],
               isUsed: ticketData[2],
               resalePrice: ticketData[3],
-              isListed: (ticketData[3] as bigint) > 0n
+              isListed: (ticketData[3] as bigint) > BigInt(0)
             });
           }
         }

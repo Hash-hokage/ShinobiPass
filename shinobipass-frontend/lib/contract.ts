@@ -1178,7 +1178,7 @@ export const arcTestnet = {
   name: 'Arc Testnet',
   nativeCurrency: { name: 'USDC', symbol: 'USDC', decimals: 18 },
   rpcUrls: {
-    default: { http: [process.env.NEXT_PUBLIC_ARC_RPC || 'https://rpc.arc.testnet.circle.com'] },
+    default: { http: [process.env.NEXT_PUBLIC_ARC_RPC || 'https://rpc.blockdaemon.testnet.arc.network'] },
   },
   blockExplorers: {
     default: { name: 'Arcscan', url: 'https://explorer.arc.testnet.circle.com' },

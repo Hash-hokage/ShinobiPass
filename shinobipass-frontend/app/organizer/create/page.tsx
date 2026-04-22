@@ -33,7 +33,7 @@ export default function CreateEventPage() {
       const priceWei = parseUnits(form.ticketPrice, 6);
       const usdcRecipient = (form.usdcRecipient || address) as `0x${string}`;
       const maxSupply = BigInt(form.maxSupply);
-      const resalePriceCap = (priceWei * BigInt(form.resaleCapMultiplier)) / 100n;
+      const resalePriceCap = (priceWei * BigInt(form.resaleCapMultiplier)) / BigInt(100);
       
       const data = encodeFunctionData({
         abi: EVENT_TICKET_ABI,
@@ -47,7 +47,7 @@ export default function CreateEventPage() {
           form.isResaleAllowed,
           resalePriceCap,
           usdcRecipient,
-          500, // Default 5% royalty fee (500 bps)
+          BigInt(500), // Default 5% royalty fee (500 bps)
           form.bannerUrl
         ]
       });

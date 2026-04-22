@@ -20,6 +20,7 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
     abi: EVENT_TICKET_ABI,
     functionName: "events",
     args: [eventId],
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   }) as { data: any | undefined };
 
   if (!eventInfo) {
@@ -40,23 +41,24 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
   const [
     name,
     venue,
-    _organizer,
-    _escrowBalance,
+    , // organizer
+    , // escrowBalance
     date,
     price,
     status,
     maxSupply,
     minted,
-    _resaleAllowed,
-    _royaltyReceiver,
-    _resalePriceCap,
-    _royaltyFeeBps,
+    , // resaleAllowed
+    , // royaltyReceiver
+    , // resalePriceCap
+    , // royaltyFeeBps
     imageURI
   ] = eventInfo;
 
   const isSoldOut = Number(minted) >= Number(maxSupply);
   const isCancelled = Number(status) === 1;
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const mapContractError = (err: any) => {
     try {
       // Extract revert data if present
@@ -129,12 +131,13 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
         title: "Success!",
         description: "Your NFT ticket has been secured in your vault.",
       });
-    } catch (err: any) {
+    } catch (err) {
       console.error(err);
       toast({
         variant: "destructive",
         title: "Minting Failed",
-        description: mapContractError(err),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        description: mapContractError(err as any),
       });
     } finally {
       setIsMinting(false);

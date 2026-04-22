@@ -2,13 +2,15 @@
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { WagmiProvider, createConfig, http } from "wagmi";
+import { injected } from "wagmi/connectors";
 import { arcTestnet } from "@/lib/contract";
 import { ZeroDevWrapper } from "@/hooks/useSmartWallet";
 import { useState } from "react";
 
-const config = createConfig({
+export const config = createConfig({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   chains: [arcTestnet as any],
+  connectors: [injected()],
   transports: {
     [arcTestnet.id]: http(),
   },

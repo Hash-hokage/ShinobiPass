@@ -8,6 +8,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { Providers } from "@/components/Providers";
 import { TransakFallbackModal } from "@/components/TransakFallbackModal";
+import { Toaster } from "@/components/ui/toaster";
 
 export const metadata: Metadata = {
   title: "ShinobiPass - Own Your Ticket",
@@ -25,6 +26,7 @@ export default function RootLayout({
         <Providers>
           {children}
           <TransakFallbackModal />
+          <Toaster />
         </Providers>
       </body>
     </html>

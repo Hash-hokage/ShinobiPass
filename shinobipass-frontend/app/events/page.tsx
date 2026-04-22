@@ -12,7 +12,7 @@ import { arcTestnet } from "@/lib/contract";
 const publicClient = createPublicClient({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   chain: arcTestnet as any,
-  transport: http(process.env.NEXT_PUBLIC_ARC_RPC || "https://rpc.arc.testnet.circle.com"),
+  transport: http(process.env.NEXT_PUBLIC_ARC_RPC || "https://rpc.blockdaemon.testnet.arc.network"),
 });
 
 export default function ExploreEventsPage() {

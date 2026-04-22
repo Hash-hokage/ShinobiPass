@@ -2,14 +2,31 @@
 
 import Link from "next/link";
 import { useSmartWallet } from "@/hooks/useSmartWallet";
-import { PlusIcon, TicketIcon, LayoutDashboardIcon, X, Mail, Wallet } from "lucide-react";
+import { PlusIcon, X, Mail, Wallet, Loader2 } from "lucide-react";
 import { useState } from "react";
+import { useConnect } from "wagmi";
+import { injected } from "wagmi/connectors";
 
 export function Navbar() {
-  const { isConnected, address, connect, disconnect } = useSmartWallet();
+  const { isConnected, isConnecting, address, connect, disconnect } = useSmartWallet();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const { connectAsync } = useConnect();
 
   const truncate = (addr: string) => `${addr.slice(0, 6)}...${addr.slice(-4)}`;
+
+  const handleWalletConnect = async () => {
+    try {
+      // 1. Trigger the EOA connection via wagmi (MetaMask / browser extension)
+      await connectAsync({ connector: injected() });
+      // 2. Close the modal — the useEffect in ZeroDevWrapper will handle the rest
+      setIsModalOpen(false);
+      // 3. The smart wallet hook's useEffect will auto-trigger ZeroDev setup
+      //    once walletClient resolves, so we just call connect() as a fallback
+      await connect();
+    } catch (e) {
+      console.error("[ShinobiPass] Auth modal connection error:", e);
+    }
+  };
 
   return (
     <>
@@ -26,7 +43,17 @@ export function Navbar() {
           </div>
 
           <div className="flex items-center gap-4">
-            {!isConnected ? (
+            {isConnecting ? (
+              /* --- Loading state: ZeroDev is setting up the smart account --- */
+              <button 
+                disabled
+                className="px-6 py-2 rounded-full border border-[#7c5cfc]/30 bg-[#7c5cfc]/10 text-[#947dff] font-body font-medium cursor-not-allowed flex items-center gap-2"
+              >
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Connecting…
+              </button>
+            ) : !isConnected ? (
+              /* --- Not connected: show Sign In button --- */
               <button 
                 onClick={() => setIsModalOpen(true)} 
                 className="px-6 py-2 rounded-full border border-[#7c5cfc]/30 bg-[#7c5cfc]/10 hover:bg-[#7c5cfc]/20 text-[#947dff] transition-all shadow-[0_0_15px_rgba(124,85,247,0.15)] hover:shadow-[0_0_25px_rgba(124,85,247,0.3)] font-body font-medium active:scale-95"
@@ -34,6 +61,7 @@ export function Navbar() {
                 Sign In
               </button>
             ) : (
+              /* --- Connected: show address + actions --- */
               <div className="flex items-center gap-3">
                 <Link href="/organizer/create">
                   <button className="hidden sm:flex items-center text-text-secondary hover:text-primary px-3 py-2 rounded font-body font-medium text-sm transition-colors gap-1.5">
@@ -80,10 +108,7 @@ export function Navbar() {
               </button>
 
               <button 
-                onClick={() => {
-                  connect();
-                  setIsModalOpen(false);
-                }}
+                onClick={handleWalletConnect}
                 className="bg-white/5 border border-white/10 text-white hover:bg-white/10 w-full py-3.5 rounded-xl font-semibold flex justify-center items-center gap-2 transition-colors"
               >
                 <Wallet className="w-5 h-5" />
